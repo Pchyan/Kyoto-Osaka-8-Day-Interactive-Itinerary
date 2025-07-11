@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第六日：USJ 終極攻略日 - 制霸環球影城</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet CSS for Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+    <style>
+        /* --- 全域與字體設定 --- */
+        :root {
+            --primary-color: #00529B; /* USJ Blue */
+            --secondary-color: #FFD700; /* Gold */
+            --accent-color: #E31F26; /* Red Accent */
+            --dark-color: #1a1a1a;
+            --light-color: #f8f9fa;
+            --text-color: #333;
+            --border-radius: 12px;
+            --shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            line-height: 1.8;
+            color: var(--text-color);
+            background-color: #fff;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Oswald', 'Noto Sans TC', sans-serif;
+            color: var(--dark-color);
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+
+        /* --- 頁首影片背景 --- */
+        .hero {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            overflow: hidden;
+        }
+
+        .hero-video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: translate(-50%, -50%);
+            z-index: -2;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.3));
+            z-index: -1;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            color: white;
+            text-shadow: 3px 3px 15px rgba(0,0,0,0.8);
+            font-weight: 900;
+            letter-spacing: 2px;
+        }
+
+        .hero h2 {
+            font-size: clamp(1.2rem, 4vw, 2rem);
+            color: var(--secondary-color);
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+        }
+        
+        .hero .scroll-down {
+            position: absolute;
+            bottom: 40px;
+            font-size: 1rem;
+            animation: bounce 2.5s infinite;
+            cursor: pointer;
+            color: white;
+            text-decoration: none;
+            border: 2px solid white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .hero .scroll-down:hover {
+            background-color: white;
+            color: var(--dark-color);
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-15px); }
+            60% { transform: translateY(-7px); }
+        }
+        
+        /* --- 內容區塊 --- */
+        .section {
+            padding: 5rem 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .section:nth-child(odd) {
+             background: linear-gradient(135deg, #ffffff 0%, #f7f8fa 100%);
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: clamp(2.2rem, 6vw, 3rem);
+            margin-bottom: 3.5rem;
+            position: relative;
+        }
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 100px;
+            height: 5px;
+            background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
+            margin: 10px auto 0;
+            border-radius: 5px;
+        }
+        
+        /* --- 戰情簡報 --- */
+        .intel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            text-align: center;
+        }
+        .intel-card {
+            background: #fff;
+            padding: 2.5rem 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border-top: 5px solid var(--primary-color);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .intel-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+        }
+        .intel-card .icon {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        /* --- 軍備競賽 (Express Pass Table) --- */
+        .express-pass-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 2rem;
+            box-shadow: var(--shadow);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+        .express-pass-table th, .express-pass-table td {
+            padding: 1.25rem 1.5rem;
+            text-align: left;
+            vertical-align: middle;
+            border-bottom: 1px solid #ddd;
+        }
+        .express-pass-table thead th {
+            background-color: var(--dark-color);
+            color: white;
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.2rem;
+        }
+        .express-pass-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        .express-pass-table tbody tr:nth-child(even) {
+            background-color: #fdfdfd;
+        }
+        .express-pass-table .rating { color: var(--secondary-color); font-weight: bold; letter-spacing: 2px; }
+        .express-pass-table .recommendation {
+            background-color: #fffbe6;
+            border-left: 6px solid var(--secondary-color);
+        }
+        .express-pass-table h5 {
+            color: var(--primary-color);
+            margin-bottom: 0.25rem;
+            font-size: 1.1rem;
+        }
+
+        /* --- 關鍵道具 --- */
+        .gear-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 2rem;
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        .gear-table th, .gear-table td {
+            padding: 1.5rem;
+            text-align: left;
+            vertical-align: middle;
+            border-bottom: 1px solid #eee;
+        }
+        .gear-table tr:last-child td { border-bottom: none; }
+        .gear-table img {
+            max-width: 100px;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .gear-table button {
+            background: linear-gradient(45deg, var(--accent-color), #ff4d4d);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.3s;
+            font-weight: bold;
+        }
+        .gear-table button:hover { 
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(227, 31, 38, 0.4);
+        }
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        .checklist-item input { margin-right: 0.75rem; width: 18px; height: 18px; }
+        
+        /* --- 時間軸 Timeline --- */
+        .timeline {
+            position: relative;
+            padding: 2rem 0;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 0; bottom: 0; left: 50%;
+            width: 4px;
+            background: linear-gradient(to bottom, var(--secondary-color), var(--primary-color));
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+        .timeline-item {
+            position: relative;
+            width: 50%;
+            margin-bottom: 50px;
+        }
+        .timeline-item:nth-child(odd) { padding-right: 50px; text-align: right; }
+        .timeline-item:nth-child(even) { left: 50%; padding-left: 50px; }
+        .timeline-item::after {
+            content: attr(data-icon);
+            font-size: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background-color: var(--dark-color);
+            color: white;
+            border: 4px solid white;
+            top: 15px; z-index: 1;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+        .timeline-item:nth-child(odd)::after { right: -20px; transform: translateX(50%); }
+        .timeline-item:nth-child(even)::after { left: -20px; transform: translateX(-50%); }
+        .timeline-content {
+            padding: 25px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        .timeline-time {
+            display: inline-block;
+            padding: 8px 18px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+        .timeline-content ul { padding-left: 20px; }
+
+        /* --- 區域簡報 (Area Cards) --- */
+        .area-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2.5rem;
+        }
+        .area-card {
+            display: flex;
+            flex-direction: row;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .area-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+        .area-card-image {
+            width: 40%;
+            min-width: 300px;
+            object-fit: cover;
+        }
+        .area-card-content {
+            padding: 2.5rem;
+            width: 60%;
+        }
+        .area-card-content h3 {
+            font-size: 2.2rem;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        .targets {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+        .target-group h4 {
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+        .target-group ul { list-style-position: inside; padding-left: 0; }
+
+        /* --- 後勤補給 & 地圖 --- */
+        .logistics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+        .logistics-card {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        .logistics-card ul {
+            list-style: none;
+            padding: 0;
+        }
+        .logistics-card li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.2rem;
+        }
+        .logistics-card li:last-child { margin-bottom: 0; }
+        .logistics-card img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-right: 1.5rem;
+            flex-shrink: 0;
+        }
+        
+        #map {
+            height: 450px;
+            width: 100%;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-top: 2rem;
+        }
+
+        /* --- Footer --- */
+        .footer {
+            background-color: var(--dark-color);
+            color: var(--light-color);
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+        .footer h4 {
+            font-family: 'Oswald', sans-serif;
+            color: var(--secondary-color);
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        .footer p {
+            max-width: 600px;
+            margin: 0 auto;
+            color: #ccc;
+        }
+
+        /* --- Modal --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            animation: fadeIn 0.3s;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 30px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 500px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s;
+        }
+        .modal-close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .modal-close:hover, .modal-close:focus {
+            color: black;
+            text-decoration: none;
+        }
+        @keyframes fadeIn { from {opacity: 0} to {opacity: 1} }
+        @keyframes slideIn { from {transform: translateY(-50px)} to {transform: translateY(0)} }
+        
+        /* --- 響應式設計 --- */
+        @media (max-width: 992px) {
+            .area-card { flex-direction: column; }
+            .area-card-image { width: 100%; height: 250px; min-width: unset; }
+            .area-card-content { width: 100%; padding: 2rem; }
+        }
+
+        @media (max-width: 768px) {
+            .timeline::before { left: 20px; }
+            .timeline-item { width: 100%; padding-left: 70px; padding-right: 0; text-align: left !important; }
+            .timeline-item:nth-child(even) { left: 0; }
+            .timeline-item::after { left: 20px; transform: translateX(-50%); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Modal -->
+    <div id="custom-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <p id="modal-text"></p>
+        </div>
+    </div>
+
+    <!-- 頁首 -->
+    <header class="hero">
+        <video class="hero-video" src="https://videos.pexels.com/video-files/3129957/3129957-hd_1920_1080_25fps.mp4" autoplay loop muted playsinline poster="https://images.pexels.com/photos/1117493/pexels-photo-1117493.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"></video>
+        <div class="hero-content">
+            <h1>USJ 一日完全制霸</h1>
+            <h2>2026/06/24 (週三) | 終極作戰手冊</h2>
+            <a href="#section-intel" class="scroll-down">↓ 查閱作戰簡報 ↓</a>
+        </div>
+    </header>
+
+    <main>
+        <!-- 序章: 戰前情資簡報 -->
+        <section id="section-intel" class="section container">
+            <h2 class="section-title">序章 | 戰前情資簡報</h2>
+            <div class="intel-grid">
+                <div class="intel-card">
+                    <div class="icon">🎯</div>
+                    <h3>任務聲明</h3>
+                    <p>指導三人作戰單位（雙親+18歲女兒），發動一場完美的USJ閃擊戰，將單日體驗價值最大化，全員凱旋而歸。</p>
+                </div>
+                <div class="intel-card">
+                    <div class="icon">👨‍👩‍👧</div>
+                    <h3>我方戰力分析</h3>
+                    <p><strong>主力突擊員 (女兒):</strong> 鎖定高強度刺激設施，如飛天翼龍、咚奇剛。<br><strong>戰術支援組 (父母):</strong> 專注沉浸式氛圍體驗，如哈利波特、任天堂世界。</p>
+                </div>
+                <div class="intel-card">
+                    <div class="icon">📈</div>
+                    <h3>威脅評估</h3>
+                    <p>主要對手是龐大人潮與恐怖的排隊時間。我們的戰略是「超越」並「智取」，而非「避開」。<strong>時間是我們最寶貴的資源。</strong></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 階段零: 軍備競賽 -->
+        <section class="section container">
+            <h2 class="section-title">階段零 |【行前】軍備競賽</h2>
+            <h3>行動一：線上購買門票 (提前1-2個月)</h3>
+            <p>此為強制性第一步。<strong>絕對禁止</strong>當日現場購票，務必提前透過Klook、KKday等官方合作平台完成，避免浪費寶貴的第一個小時。</p>
+            
+            <h3 style="margin-top: 2.5rem;">行動二：決斷『環球特快入場券』(Express Pass)</h3>
+            <p>這不是VIP券，這是「時間魔法券」，是確保任務成功的關鍵。它不僅是「快速通關券」，更是進入超級任天堂世界的「保證入場券」。<strong>務必在開賣第一時間搶購！</strong></p>
+            
+            <table class="express-pass-table">
+                <caption>環球特快入場券 4 - 家庭單位戰略分析 (2024年後版本)</caption>
+                <thead>
+                    <tr>
+                        <th>方案名稱</th>
+                        <th>女兒刺激度 (5分)</th>
+                        <th>父母氛圍感 (5分)</th>
+                        <th>戰略建議</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="recommendation">
+                        <td><h5>Premium</h5><small>頂級尊爵方案</small></td>
+                        <td><span class="rating">★★★★★</span> 5.0</td>
+                        <td><span class="rating">★★★★★</span> 5.0</td>
+                        <td><strong>[ 終極方案 ]</strong> 包含幾乎所有熱門設施，包含咚奇剛、飛天翼龍、瑪利歐賽車、禁忌之旅。價格最高，但能換來最從容、最全面的體驗，壓力最小。</td>
+                    </tr>
+                    <tr>
+                        <td><h5>Fun & Variety</h5><small>咚奇剛+瑪利歐賽車+咒術迴戰</small></td>
+                        <td><span class="rating">★★★★☆</span> 4.5</td>
+                        <td><span class="rating">★★★★★</span> 5.0</td>
+                        <td><strong>[ 新潮動漫迷首選 ]</strong> 完美覆蓋兩大任天堂設施與最新的動漫合作4D體驗(以咒術迴戰為例)，但缺少飛天翼龍。適合想追最新潮流的家庭。</td>
+                    </tr>
+                    <tr>
+                        <td><h5>Limited & Variety</h5><small>鬼滅之刃+瑪利歐賽車</small></td>
+                        <td><span class="rating">★★★★☆</span> 4.0</td>
+                        <td><span class="rating">★★★★★</span> 5.0</td>
+                        <td><strong>[ 期間限定攻略 ]</strong> 專攻像「鬼滅之刃XR乘車遊」這類超人氣期間限定設施。若女兒是鬼滅迷，此為必選。需注意鬼滅之刃通常需要衝刺開園或另外抽整理券。</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p style="text-align: right; margin-top: 1rem; font-size: 0.9rem;"><strong>情報更新：</strong>Express Pass 組合時常變動，請以 <a href="https://www.usj.co.jp/ticket/express-pass/" target="_blank">USJ官網</a> 為最終依據。</p>
+
+            <h3 style="margin-top: 2.5rem;">行動三：整備您的關鍵道具</h3>
+            <table class="gear-table">
+                <tbody>
+                    <tr>
+                        <td><strong>能量手環</strong></td>
+                        <td><img src="https://images.pexels.com/photos/19994002/pexels-photo-19994002/free-photo-of-a-person-wearing-a-mario-themed-watch-and-bracelet.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="能量手環"></td>
+                        <td><strong>[ 女兒必備 ]</strong> 在任天堂世界敲磚塊、集金幣的靈魂道具，將「遊客」升級為「玩家」，樂趣倍增！</td>
+                        <td><button class="interactive-btn" data-message="明智的選擇！孩子的快樂無價！已將此項目加入您的虛擬購物車。">為女兒裝備？ [ YES ✅ ]</button></td>
+                    </tr>
+                    <tr>
+                        <td><strong>官方APP</strong></td>
+                        <td><img src="https://is1-ssl.mzstatic.com/image/thumb/Purple126/v4/35/06/18/35061806-0bd4-0f2c-567c-9b19e2764b8a/AppIcon-0-0-1x_U007e-0-0-0-7-0-0-sRGB-0-0-0-GLES2_U002c0-512MB-85-220-0-0.png/246x0w.webp" alt="USJ APP"></td>
+                        <td><strong>[ 全家核心 ]</strong> 戰情室！用於地圖導航、監控等待時間、抽選整理券/預約乘坐。</td>
+                        <td>
+                            <div class="checklist">
+                                <div class="checklist-item"><input type="checkbox" id="check1"><label for="check1">下載USJ官方APP</label></div>
+                                <div class="checklist-item"><input type="checkbox" id="check2"><label for="check2">註冊帳號</label></div>
+                                <div class="checklist-item"><input type="checkbox" id="check3"><label for="check3"><strong>[關鍵]</strong> 將全家門票QR Code掃入<strong>同一台手機</strong></label></div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <!-- 階段一～四: 決戰當日時間軸 -->
+        <section class="section container">
+            <h2 class="section-title">決戰當日時間軸</h2>
+            <div class="timeline">
+                <div class="timeline-item" data-icon="🏃">
+                    <div class="timeline-content">
+                        <span class="timeline-time">07:00 | 拂曉出擊</span>
+                        <h4>地點：大門口</h4>
+                        <p><strong>目標：</strong>比官網開園時間<strong>提早90分鐘</strong>抵達。USJ常提早30-60分鐘開園，早到就是勝利，這是為了參與「真正」的開園！</p>
+                    </div>
+                </div>
+                <div class="timeline-item" data-icon="⚡">
+                    <div class="timeline-content">
+                        <span class="timeline-time">08:30 (預估) | 黃金衝刺</span>
+                        <h4>行動：第一波攻擊</h4>
+                        <p>利用人流相對分散的「黃金時間」，全速向「侏儸紀公園」推進，直攻Express Pass未包含的<strong>「飛天翼龍」</strong>！開園初期排隊約30分鐘，中午將突破120分鐘。</p>
+                    </div>
+                </div>
+                <div class="timeline-item" data-icon="🎮">
+                    <div class="timeline-content">
+                        <span class="timeline-time">10:00-14:00 | 據點輻射式進攻</span>
+                        <h4>指令：以Express Pass時間為骨幹</h4>
+                        <ul>
+                            <li><strong>任天堂世界™：</strong>依指定時間進入，直攻「咚奇剛」與「瑪利歐賽車」。</li>
+                            <li><strong>哈利波特魔法世界™：</strong>依指定時間進入，體驗「禁忌之旅」，在活米村品嚐奶油啤酒。</li>
+                            <li>在預約時段空檔，用APP攻擊鄰近區域排隊時間短的設施。</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="timeline-item" data-icon="🍔">
+                    <div class="timeline-content">
+                        <span class="timeline-time">11:00 or 14:00 | 能量補充</span>
+                        <h4>策略：離峰用餐</h4>
+                        <p>在上午11:00或下午14:00用餐，避開排隊人潮。首選推薦<strong>「三根掃帚」</strong>，戶外座位擁有絕佳的霍格華茲城堡景觀，氛圍滿分。</p>
+                    </div>
+                </div>
+                <div class="timeline-item" data-icon="💥">
+                    <div class="timeline-content">
+                        <span class="timeline-time">15:00 | 彈性探索 & 表演</span>
+                        <h4>任務：拾遺與休息</h4>
+                        <p>觀賞經典的<strong>「水世界」</strong>真人特技爆破秀，場地巨大，是雙腿疲憊時的最佳娛樂。或攻擊其他經典設施如「大白鯊」。</p>
+                    </div>
+                </div>
+                <div class="timeline-item" data-icon="🎉">
+                    <div class="timeline-content">
+                        <span class="timeline-time">17:00 | 狂歡時刻</span>
+                        <h4>必看：NO LIMIT! 遊行</h4>
+                        <p>提前30分鐘在好萊塢區卡位，感受充滿活力的視覺與聽覺盛宴。</p>
+                    </div>
+                </div>
+                <div class="timeline-item" data-icon="🛍️">
+                    <div class="timeline-content">
+                        <span class="timeline-time">19:00 | 最終突襲 & 採購</span>
+                        <h4>行動：終局之戰</h4>
+                        <p>閉園前30-45分鐘，頂級設施排隊時間會大幅縮短，可發動最後突襲！並在入口處的「環球影城禮品屋」進行最終掃蕩。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 階段三: 重點區域簡報 -->
+        <section class="section container">
+            <h2 class="section-title">重點區域簡報</h2>
+            <div class="area-grid">
+                <!-- 任天堂世界 -->
+                <div class="area-card">
+                    <img src="https://images.pexels.com/photos/19993959/pexels-photo-19993959.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="超級任天堂世界" class="area-card-image">
+                    <div class="area-card-content">
+                        <h3>超級任天堂世界 & 咚奇剛國度</h3>
+                        <p><strong>氛圍：</strong>從綠色水管走出，8-bit音效與鮮豔色彩將你包圍。這是一個活生生的遊戲世界，而新擴建的咚奇剛國度則帶來一股原始叢林的狂野氣息。</p>
+                        <div class="targets">
+                            <div class="target-group">
+                                <h4>🚀 女兒打擊目標</h4>
+                                <ul>
+                                    <li><strong>咚奇剛的瘋狂礦車:</strong> 體驗在斷裂軌道上「跳躍」的獨特快感。</li>
+                                    <li><strong>瑪利歐賽車:</strong> 戴上AR裝置，投擲龜殼，來一場真實的卡丁車大賽。</li>
+                                </ul>
+                            </div>
+                            <div class="target-group">
+                                <h4>👨‍👩‍👧 父母體驗重點</h4>
+                                <ul>
+                                    <li><strong>能量手環互動:</strong> 購買手環，在園區敲磚塊、集金幣，享受輕鬆的代入感。</li>
+                                    <li><strong>與角色合照:</strong> 捕捉與瑪利歐、路易吉和碧姬公主的珍貴合影。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 哈利波特 -->
+                <div class="area-card">
+                    <img src="https://images.pexels.com/photos/2090901/pexels-photo-2090901.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="哈利波特的魔法世界" class="area-card-image">
+                    <div class="area-card-content">
+                        <h3>哈利波特的魔法世界</h3>
+                        <p><strong>氛圍：</strong>穿過巨石陣，踏入白雪皚皚的活米村。遠方巍峨的霍格華茲城堡與火車汽笛聲，營造出令人屏息的奇幻氛圍。</p>
+                        <div class="targets">
+                            <div class="target-group">
+                                <h4>🚀 女兒打擊目標</h4>
+                                <ul>
+                                    <li><strong>哈利波特禁忌之旅:</strong> 乘坐魔法長凳，與催狂魔來一場心驚膽顫的追逐，技術力滿點的飛行體驗。</li>
+                                </ul>
+                            </div>
+                            <div class="target-group">
+                                <h4>👨‍👩‍👧 父母體驗重點</h4>
+                                <ul>
+                                    <li><strong>活米村探索:</strong> 逛桑科的惡作劇商店、蜂蜜公爵，在奧利凡德觀看魔杖挑選儀式。</li>
+                                    <li><strong>奶油啤酒:</strong> 在「三根掃帚」戶外座位，點杯奶油啤酒，靜靜欣賞霍格華茲城堡。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 侏儸紀公園 -->
+                <div class="area-card">
+                    <img src="https://images.pexels.com/photos/1670187/pexels-photo-1670187.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="侏儸紀公園" class="area-card-image">
+                    <div class="area-card-content">
+                        <h3>侏儸紀公園</h3>
+                        <p><strong>氛圍：</strong>濃密濕熱的叢林，充滿恐龍的嘶吼聲。標誌性的大門預示著一場充滿驚奇與危險的冒險。</p>
+                        <div class="targets">
+                            <div class="target-group">
+                                <h4>🚀 女兒打擊目標</h4>
+                                <ul>
+                                    <li><strong>飛天翼龍:</strong> 園區刺激度的頂級掠食者。面部朝下被懸吊飛行，G力與翻滾將徹底顛覆你的方向感。</li>
+                                </ul>
+                            </div>
+                            <div class="target-group">
+                                <h4>👨‍👩‍👧 父母體驗重點</h4>
+                                <ul>
+                                    <li><strong>侏儸紀公園・乘船遊:</strong> 經典的激流勇進，觀賞栩栩如生的機械恐龍，並在最後為逃離暴龍而高處俯衝。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 最終階段: 後勤、戰利品與地圖 -->
+        <section class="section container">
+            <h2 class="section-title">最終階段 | 後勤、戰利品 & 地圖</h2>
+            <div class="logistics-grid">
+                <div class="logistics-card">
+                    <h3>🍽️ 主題餐廳情報</h3>
+                    <ul>
+                        <li><img src="https://images.pexels.com/photos/1268558/pexels-photo-1268558.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="美食"><div><strong>三根掃帚 (推薦):</strong> 氛圍最強，享受豐盛英式料理，欣賞城堡景觀。</div></li>
+                        <li><img src="https://images.pexels.com/photos/376464/pexels-photo-376464.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="漢堡"><div><strong>奇諾比奧咖啡店:</strong> 趣味性最高，食物造型極具巧思，適合拍照打卡。</div></li>
+                        <li><img src="https://images.pexels.com/photos/1633578/pexels-photo-1633578.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="侏儸紀美食"><div><strong>探索家餐廳:</strong> 位於侏儸紀公園，提供熱帶風味的豪邁餐點，適合肉食愛好者。</div></li>
+                    </ul>
+                </div>
+                <div class="logistics-card">
+                    <h3>🎁 必購戰利品清單</h3>
+                    <ul>
+                        <li><img src="https://m.media-amazon.com/images/I/61y8P2r46GL._AC_SL1500_.jpg" alt="無敵星星爆米花桶"><div><strong>無敵星星爆米花桶:</strong> 會發光！最高級的戰利品，極具收藏價值。</div></li>
+                        <li><img src="https://m.media-amazon.com/images/I/61j-FABm-UL._AC_UF894,1000_QL80_.jpg" alt="互動魔杖"><div><strong>互動魔杖:</strong> 終極紀念品，可在園區內指定地點「施展魔法」。</div></li>
+                        <li><img src="https://i.ebayimg.com/images/g/5iMAAOSwYgRhB-Cg/s-l1200.jpg" alt="巧克力蛙"><div><strong>巧克力蛙:</strong> 內附隨機巫師卡，經典且經濟實惠的選擇。</div></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <h3 style="text-align: center; font-size: 1.8rem; margin-top: 4rem; margin-bottom: 2rem;">作戰區域地圖</h3>
+            <div id="map"></div>
+        </section>
+
+    </main>
+
+    <!-- 頁尾 -->
+    <footer class="footer">
+        <h4>MISSION ACCOMPLISHED!</h4>
+        <p>計畫是骨架，當天的笑容與驚喜才是靈魂。祝您的家庭擁有最奇幻、無憾的一天！</p>
+    </footer>
+
+    <!-- Leaflet JS for Map -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- Modal Logic ---
+            const modal = document.getElementById('custom-modal');
+            const modalText = document.getElementById('modal-text');
+            const closeBtn = document.querySelector('.modal-close');
+
+            function showModal(message) {
+                modalText.textContent = message;
+                modal.style.display = 'block';
+            }
+
+            if(closeBtn) {
+                closeBtn.onclick = function() {
+                    modal.style.display = 'none';
+                }
+            }
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            }
+
+            // --- Interactive Buttons ---
+            const interactiveBtns = document.querySelectorAll('.interactive-btn');
+            interactiveBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const message = this.dataset.message;
+                    if (message) {
+                        showModal(message);
+                    }
+                });
+            });
+
+            // --- Scroll-to link ---
+            const scrollLink = document.querySelector('.scroll-down');
+            if(scrollLink) {
+                scrollLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            }
+
+            // --- Leaflet Map Initialization ---
+            const mapElement = document.getElementById('map');
+            if (mapElement) {
+                const usjCoords = [34.6654, 135.4323];
+                const map = L.map('map').setView(usjCoords, 16);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                }).addTo(map);
+
+                const usjIcon = L.icon({
+                    iconUrl: 'https://www.usj.co.jp/web/common/images/common/common/usj_logo.png',
+                    iconSize: [120, 45],
+                    iconAnchor: [60, 22],
+                    popupAnchor: [0, -22]
+                });
+
+                const marker = L.marker(usjCoords, {icon: usjIcon}).addTo(map);
+                marker.bindPopup("<b>日本環球影城 (USJ)</b><br>作戰目標所在地").openPopup();
+
+                const stationCoords = [34.6670, 135.4380];
+                 L.marker(stationCoords).addTo(map)
+                .bindPopup("<b>環球城站 (Universal City)</b><br>主要入口");
+            }
+        });
+    </script>
+
+</body>
+</html>

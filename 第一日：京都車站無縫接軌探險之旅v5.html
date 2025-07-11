@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第一日：京都車站無縫接軌探險之旅</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Noto Sans TC', sans-serif; 
+            background-color: #fdfcfb;
+            color: #333;
+        }
+        .hero-bg {
+            background-image: linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0.2)), url('https://images.unsplash.com/photo-1542051841857-5f90071e7989?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+        }
+        .section-title {
+            position: relative;
+            padding-bottom: 1rem;
+            margin-bottom: 2.5rem;
+        }
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background-color: #d97706; /* Amber-600 */
+            border-radius: 2px;
+        }
+        .step-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .step-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+        .transport-btn.active {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.4);
+        }
+        .dinner-btn.active {
+            background-color: #d97706 !important;
+            color: white !important;
+            transform: scale(1.05);
+        }
+        .timeline-item .content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        .timeline-item.open .content {
+            max-height: 500px; /* Adjust as needed */
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .fade-in {
+            animation: fadeIn 0.8s ease-in-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800">
+
+    <!-- Hero Section -->
+    <header class="hero-bg text-white min-h-[50vh] md:min-h-[60vh] flex flex-col justify-center items-center text-center p-4">
+        <div class="bg-black bg-opacity-40 p-6 md:p-10 rounded-xl">
+            <h1 class="text-4xl md:text-6xl font-black tracking-wider">京都初日：完美啟程</h1>
+            <p class="mt-4 text-lg md:text-2xl font-light max-w-2xl">從關西機場直達京都心臟，一場結合現代建築與美食的無縫探險</p>
+            <p class="mt-2 text-md text-amber-300">規劃日期：2026/06/19 (週五)</p>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-7xl">
+
+        <!-- Main Flow -->
+        <main class="space-y-24">
+
+            <!-- Section 1: Airport Arrival -->
+            <section id="arrival" class="fade-in">
+                <h2 class="section-title text-4xl font-bold text-center">
+                    <span class="text-amber-600">STEP 1</span> | 零壓力入境
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div class="step-card bg-white p-6 rounded-xl shadow-lg border-t-4 border-amber-500">
+                        <i class="fas fa-plane-departure text-4xl text-amber-500 mb-4"></i>
+                        <h3 class="font-bold text-xl mb-2">落地前準備</h3>
+                        <p class="text-stone-600">備妥全員護照與 Visit Japan Web 的 QR Code 截圖，從容應對。</p>
+                    </div>
+                    <div class="step-card bg-white p-6 rounded-xl shadow-lg border-t-4 border-amber-500">
+                        <i class="fas fa-passport text-4xl text-amber-500 mb-4"></i>
+                        <h3 class="font-bold text-xl mb-2">入境審查</h3>
+                        <p class="text-stone-600">跟隨「到着」指示，使用自助機掃描 QR Code，再至櫃檯採集指紋與拍照。</p>
+                    </div>
+                    <div class="step-card bg-white p-6 rounded-xl shadow-lg border-t-4 border-amber-500">
+                        <i class="fas fa-suitcase-rolling text-4xl text-amber-500 mb-4"></i>
+                        <h3 class="font-bold text-xl mb-2">行李提領 & 海關</h3>
+                        <p class="text-stone-600">提領行李後，走向「電子申告ゲート」，掃描護照與 QR Code，體驗秒速通關。</p>
+                    </div>
+                    <div class="step-card bg-white p-6 rounded-xl shadow-lg border-t-4 border-amber-500">
+                        <i class="fas fa-check-circle text-4xl text-green-500 mb-4"></i>
+                        <h3 class="font-bold text-xl mb-2">抵達入境大廳</h3>
+                        <p class="text-stone-600">恭喜入境！身處1樓大廳，準備搭乘手扶梯上2樓，開啟京都之旅。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 2: Transportation -->
+            <section id="transport" class="fade-in">
+                <h2 class="section-title text-4xl font-bold text-center">
+                    <span class="text-amber-600">STEP 2</span> | 交通決策
+                </h2>
+                <div class="bg-white p-6 md:p-10 rounded-2xl shadow-2xl">
+                    <div class="flex flex-col lg:flex-row gap-8 lg:gap-12">
+                        <!-- Left: Chart and Buttons -->
+                        <div class="lg:w-1/2">
+                            <h3 class="text-2xl font-bold text-center mb-4">HARUKA vs. 利木津巴士</h3>
+                            <p class="text-center text-stone-600 mb-6">點擊下方按鈕，透過最新數據分析，選擇最適合您的交通方式。</p>
+                            <div class="flex justify-center gap-4 mb-8">
+                                <button id="harukaBtn" class="transport-btn bg-amber-500 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all duration-300">JR HARUKA</button>
+                                <button id="busBtn" class="transport-btn bg-stone-200 text-stone-700 font-bold py-3 px-8 rounded-full shadow-lg transition-all duration-300">利木津巴士</button>
+                            </div>
+                            <div class="relative h-64 md:h-80">
+                                <canvas id="transportChart"></canvas>
+                            </div>
+                        </div>
+                        <!-- Right: Details and Guide -->
+                        <div class="lg:w-1/2">
+                            <div id="transportDetails" class="min-h-[200px]"></div>
+                            <div class="mt-8 bg-amber-50 p-6 rounded-lg border-l-4 border-amber-400">
+                                <h4 class="font-bold text-xl text-amber-800 mb-3 flex items-center"><i class="fas fa-ticket-alt mr-3"></i>HARUKA 乘車實戰</h4>
+                                <ol class="list-decimal list-inside space-y-2 text-stone-700">
+                                    <li>從入境大廳(1F)搭手扶梯至2F，經空橋前往「關西機場車站」。</li>
+                                    <li>在JR綠色售票機，掃描護照與電子憑證QR Code兌換實體票。</li>
+                                    <li>持票入閘，前往<strong class="text-red-600">4號月台</strong>，搭乘往京都的自由席車廂。</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 3: Hotel & Exploration -->
+            <section id="explore" class="fade-in">
+                <h2 class="section-title text-4xl font-bold text-center">
+                    <span class="text-amber-600">STEP 3</span> | 抵達 & 探索京都車站
+                </h2>
+                <div class="relative border-l-4 border-amber-300 ml-6 md:ml-0">
+                    <!-- Timeline Item 1: Hotel Check-in -->
+                    <div class="timeline-item mb-16 pl-12 open">
+                        <div class="absolute -left-[18px] top-1 w-8 h-8 bg-amber-500 rounded-full border-4 border-white shadow-md flex items-center justify-center">
+                            <i class="fas fa-bed text-white"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-amber-700 cursor-pointer title">16:00 - 17:00 | 飯店安頓</h3>
+                        <div class="content mt-4 text-stone-600 space-y-2">
+                            <p>抵達京都車站後，步行至飯店 (如 MIMARU KYOTO STATION) 辦理入住。卸下行囊，稍作休息，準備輕裝探索這座結合了交通、購物與藝術的巨大建築。</p>
+                            <div class="bg-blue-50 border-l-4 border-blue-400 text-blue-800 p-4 rounded-r-lg">
+                                <p><strong class="font-bold">置物櫃資訊：</strong>車站B1及1F八条口設有大型投幣式置物櫃，方便提早抵達或延後離開的旅客寄放行李。</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Timeline Item 2: Sightseeing -->
+                    <div class="timeline-item mb-16 pl-12">
+                        <div class="absolute -left-[18px] top-1 w-8 h-8 bg-amber-500 rounded-full border-4 border-white shadow-md flex items-center justify-center">
+                            <i class="fas fa-camera-retro text-white"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-amber-700 cursor-pointer title">17:00 - 18:30 | 景觀巡禮</h3>
+                        <div class="content mt-4 text-stone-600 space-y-4">
+                            <div class="p-4 bg-white rounded-lg shadow-sm">
+                                <strong class="text-amber-800">空中徑路 (10F):</strong> 漫步於45米高的玻璃隧道，俯瞰車站鋼骨結構，遠眺京都塔與日落餘暉。
+                            </div>
+                            <div class="p-4 bg-white rounded-lg shadow-sm">
+                                <strong class="text-amber-800">大階梯 (4F-10F):</strong> 走下171階的都市舞台。夜晚，15,000顆LED將上演夢幻燈光秀，是絕佳的打卡點。
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timeline Item 3: Dinner -->
+                    <div class="timeline-item mb-16 pl-12">
+                        <div class="absolute -left-[18px] top-1 w-8 h-8 bg-amber-500 rounded-full border-4 border-white shadow-md flex items-center justify-center">
+                            <i class="fas fa-utensils text-white"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-amber-700 cursor-pointer title">18:30 - 20:00 | 晚餐時光</h3>
+                        <div class="content mt-4 text-stone-600">
+                            <p class="mb-6">晚餐時間！您是拉麵愛好者，還是想來點精緻的和食？</p>
+                            <div class="flex justify-center gap-4 mb-6">
+                                <button id="ramenDinnerBtn" class="dinner-btn bg-stone-200 text-stone-700 font-bold py-2 px-6 rounded-full transition-all duration-300">🍜 拉麵小路</button>
+                                <button id="varietyDinnerBtn" class="dinner-btn bg-stone-200 text-stone-700 font-bold py-2 px-6 rounded-full transition-all duration-300">🍱 精緻和食</button>
+                            </div>
+                            <div id="ramenDinnerContent" class="hidden fade-in bg-white p-4 rounded-lg shadow-inner">
+                                <h4 class="font-bold text-lg text-amber-800 text-center mb-4">京都拉麵小路 (車站10F)</h4>
+                                <p class="text-center text-sm text-stone-500 mb-4">集結日本全國人氣拉麵店，是拉麵迷的聖地。</p>
+                                <ul class="list-disc list-inside space-y-2">
+                                    <li><strong>博多一幸舎:</strong> 經典泡沫系豚骨，湯頭濃郁滑順。</li>
+                                    <li><strong>ラーメン東大:</strong> 德島特色，壽喜燒風味的豚骨醬油拉麵，可免費加生雞蛋。</li>
+                                    <li><strong>白樺山荘:</strong> 札幌濃厚味噌拉麵，蒜香濃郁，暖心暖胃。</li>
+                                </ul>
+                            </div>
+                            <div id="varietyDinnerContent" class="hidden fade-in bg-white p-4 rounded-lg shadow-inner">
+                                <h4 class="font-bold text-lg text-amber-800 text-center mb-4">伊勢丹美食街 (11F)</h4>
+                                <p class="text-center text-sm text-stone-500 mb-4">提供多元化選擇，適合家庭或想品嚐多樣日式料理的您。</p>
+                                <ul class="list-disc list-inside space-y-2">
+                                    <li><strong>名代豬排 かつくら:</strong> 京都本地名店，外酥內嫩的高品質炸豬排。</li>
+                                    <li><strong>市場小路:</strong> 品嚐京都家常菜(おばんざい)，還能欣賞京都塔夜景。</li>
+                                    <li><strong>和久傳:</strong> 提供精緻的懷石料理便當及料亭等級的美味。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timeline Item 4: Shopping & Closing -->
+                    <div class="timeline-item pl-12">
+                        <div class="absolute -left-[18px] top-1 w-8 h-8 bg-amber-500 rounded-full border-4 border-white shadow-md flex items-center justify-center">
+                            <i class="fas fa-shopping-bag text-white"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-amber-700 cursor-pointer title">20:00 後 | 散策 & 採購</h3>
+                        <div class="content mt-4 text-stone-600 space-y-2">
+                            <p>飯後可在伊勢丹百貨B1美食街、Porta地下街閒逛，選購伴手禮或隔日早餐。若仍有體力，車站對面的「驚安殿堂・唐吉訶德」是您補給藥妝、零食的最終站。</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 4: Map -->
+            <section id="map" class="fade-in">
+                <h2 class="section-title text-4xl font-bold text-center">
+                    <span class="text-amber-600">MAP</span> | 相對位置地圖
+                </h2>
+                <div class="bg-white p-4 rounded-2xl shadow-2xl">
+                    <p class="text-center text-stone-600 mb-6">這張地圖標示了從「關西國際機場」到「京都車站」的路線，以及車站周邊的推薦飯店與景點，讓您對第一天的行程動線一目了然。</p>
+                    <div class="aspect-w-16 aspect-h-9 rounded-lg overflow-hidden">
+                        <iframe 
+                            src="https://www.google.com/maps/embed?pb=!1m28!1m12!1m3!1d105073.2394191681!2d135.6883220703813!3d34.83610211475631!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m13!3e0!4m5!1s0x6000b9182d561f7f%3A0x35274b9a78434778!2sKansai%20International%20Airport%20(KIX)%2C%201%20Senshukukokita%2C%20Izumisano%2C%20Osaka%20549-0001%2C%20Japan!3m2!1d34.4324843!2d135.2303899!4m5!1s0x600108ae918b02ef%3A0xb61a446e74a21c08!2sKyoto%20Station%2C%20Higashishiokoji%20Kamadonocho%2C%20Shimogyo%20Ward%2C%20Kyoto%2C%20600-8216%2C%20Japan!3m2!1d34.9858491!2d135.758769!5e0!3m2!1sen!2stw!4v1689061556123!5m2!1sen!2stw" 
+                            width="100%" 
+                            height="100%" 
+                            style="border:0;" 
+                            allowfullscreen="" 
+                            loading="lazy" 
+                            referrerpolicy="no-referrer-when-downgrade">
+                        </iframe>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="text-center mt-24 border-t-2 border-stone-200 pt-10">
+            <p class="text-stone-600 text-lg">🎉 祝您有個精彩難忘的京都第一夜！ 🎉</p>
+            <a href="#" class="text-amber-600 hover:underline mt-4 inline-block">返回頂部 <i class="fas fa-arrow-up ml-1"></i></a>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- Smooth Scroll ---
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    if (targetId.length > 1) {
+                        document.querySelector(targetId).scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    } else {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                });
+            });
+
+            // --- Transportation Chart ---
+            const harukaBtn = document.getElementById('harukaBtn');
+            const busBtn = document.getElementById('busBtn');
+            const transportDetails = document.getElementById('transportDetails');
+            let transportChart;
+
+            // UPDATED INFO: Prices and times are based on latest available data for 2024/2025.
+            const transportData = {
+                haruka: {
+                    label: 'JR HARUKA', time: 80, cost: 2200, // Foreigner discount ticket price
+                    title: 'JR HARUKA 關空特快',
+                    conclusion: '速度、性價比與準時性的最佳選擇，強烈推薦。',
+                    points: [
+                        { type: '優點', text: '速度最快 (約80分鐘直達)、班次密集、準點率極高、外國人優惠票價划算。' },
+                        { type: '缺點', text: '尖峰時段自由席可能無座位，需自行搬運行李。' }
+                    ]
+                },
+                bus: {
+                    label: '利木津巴士', time: 95, cost: 2800,
+                    title: '利木津巴士',
+                    conclusion: '適合行李多或不想搬運的旅客，是舒適的備用方案。',
+                    points: [
+                        { type: '優點', text: '專人協助搬運行李，點對點直達部分飯店，免去轉乘麻煩。' },
+                        { type: '缺點', text: '行車時間較長且易受路況影響，費用較高，班次相對較少。' }
+                    ]
+                }
+            };
+            
+            function createTransportChart() {
+                const ctx = document.getElementById('transportChart').getContext('2d');
+                transportChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['時間 (分鐘)', '費用 (日圓)'],
+                        datasets: [
+                            { ...transportData.haruka, data: [transportData.haruka.time, transportData.haruka.cost], backgroundColor: '#f59e0b', borderRadius: 5 },
+                            { ...transportData.bus, data: [transportData.bus.time, transportData.bus.cost], backgroundColor: '#a8a29e', borderRadius: 5 }
+                        ]
+                    },
+                    options: {
+                        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: '#333', titleFont: { size: 14 }, bodyFont: { size: 12 },
+                                callbacks: {
+                                    label: (c) => `${c.dataset.label}: ${c.label === '費用 (日圓)' ? c.parsed.x.toLocaleString() + ' JPY' : c.parsed.x + ' 分'}`
+                                }
+                            }
+                        },
+                        scales: { 
+                            x: { beginAtZero: true, grid: { display: false }, ticks: { font: { weight: 'bold' } } },
+                            y: { grid: { display: false }, ticks: { font: { size: 14, weight: 'bold' } } }
+                        }
+                    }
+                });
+            }
+
+            function updateTransportDetails(key) {
+                const data = transportData[key];
+                const pointsHTML = data.points.map(p => `
+                    <div class="flex items-start mt-3">
+                        <span class="flex-shrink-0 text-xs font-bold py-1 px-3 rounded-full ${p.type === '優點' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${p.type}</span>
+                        <p class="ml-3 text-stone-600">${p.text}</p>
+                    </div>`).join('');
+                
+                transportDetails.innerHTML = `
+                    <div class="fade-in p-5 rounded-lg ${key === 'haruka' ? 'bg-amber-50' : 'bg-stone-100'}">
+                        <h4 class="text-xl font-bold ${key === 'haruka' ? 'text-amber-800' : 'text-stone-800'}">${data.title}</h4>
+                        ${pointsHTML}
+                        <p class="mt-4 font-semibold text-stone-800 border-t pt-3 border-stone-300"><strong>結論：</strong>${data.conclusion}</p>
+                    </div>`;
+            }
+
+            function setActiveTransport(activeKey) {
+                const isHaruka = activeKey === 'haruka';
+                harukaBtn.classList.toggle('active', isHaruka);
+                harukaBtn.classList.toggle('bg-amber-500', isHaruka);
+                harukaBtn.classList.toggle('text-white', isHaruka);
+                harukaBtn.classList.toggle('bg-stone-200', !isHaruka);
+                harukaBtn.classList.toggle('text-stone-700', !isHaruka);
+
+                busBtn.classList.toggle('active', !isHaruka);
+                busBtn.classList.toggle('bg-amber-500', !isHaruka);
+                busBtn.classList.toggle('text-white', !isHaruka);
+                busBtn.classList.toggle('bg-stone-200', isHaruka);
+                busBtn.classList.toggle('text-stone-700', isHaruka);
+                
+                updateTransportDetails(activeKey);
+            }
+            
+            if (harukaBtn) {
+                createTransportChart();
+                setActiveTransport('haruka');
+                harukaBtn.addEventListener('click', () => setActiveTransport('haruka'));
+                busBtn.addEventListener('click', () => setActiveTransport('bus'));
+            }
+
+            // --- Dinner Choice Logic ---
+            const ramenBtn = document.getElementById('ramenDinnerBtn');
+            const varietyBtn = document.getElementById('varietyDinnerBtn');
+            const ramenContent = document.getElementById('ramenDinnerContent');
+            const varietyContent = document.getElementById('varietyDinnerContent');
+
+            function setDinnerChoice(choice) {
+                const isRamen = choice === 'ramen';
+                ramenBtn.classList.toggle('active', isRamen);
+                ramenContent.classList.toggle('hidden', !isRamen);
+                varietyBtn.classList.toggle('active', !isRamen);
+                varietyContent.classList.toggle('hidden', isRamen);
+            }
+
+            if(ramenBtn) {
+                ramenBtn.addEventListener('click', () => setDinnerChoice('ramen'));
+                varietyBtn.addEventListener('click', () => setDinnerChoice('variety'));
+                setDinnerChoice('ramen'); // Default choice
+            }
+
+            // --- Timeline Accordion ---
+            const timelineItems = document.querySelectorAll('.timeline-item');
+            timelineItems.forEach(item => {
+                const title = item.querySelector('.title');
+                title.addEventListener('click', () => {
+                    // Close other items
+                    timelineItems.forEach(otherItem => {
+                        if (otherItem !== item) {
+                            otherItem.classList.remove('open');
+                        }
+                    });
+                    // Toggle current item
+                    item.classList.toggle('open');
+                });
+            });
+
+            // --- Animate on Scroll ---
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('fade-in');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('section').forEach(section => {
+                section.style.opacity = '0'; // Hide sections initially
+                observer.observe(section);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>嵐山風物詩：一日深度遊互動行程</title>
+    
+    <!-- Google Fonts for elegant typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Leaflet.js for Interactive Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <style>
+        :root {
+            --bg-main: #FDFCF8;
+            --text-primary: #3D405B;
+            --text-secondary: #6B7280;
+            --accent-primary: #81B29A;
+            --accent-secondary: #F2CC8F;
+            --card-bg: #FFFFFF;
+            --border-color: #E5E7EB;
+        }
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 70px; /* Offset for sticky header */
+        }
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            font-family: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .navbar {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            background-color: rgba(253, 252, 248, 0.9);
+        }
+        .nav-link.active {
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+        h1, h2, h3, h4 {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .btn-primary {
+            background-color: var(--accent-primary);
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary:hover {
+            background-color: #6a9c82;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        }
+        .btn-secondary {
+            background-color: var(--accent-secondary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+        .btn-secondary:hover {
+            background-color: #e6bf7a;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            animation: fadeIn 0.3s;
+        }
+        .modal-content {
+            background-color: var(--bg-main);
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+            animation: slideIn 0.3s;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        .tab-button.active {
+            border-bottom-color: var(--accent-primary);
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            top: 1.25rem;
+            left: -1px;
+            width: 2px;
+            height: 100%;
+            background-color: var(--accent-primary);
+            opacity: 0.3;
+        }
+        .timeline-item:last-child::before { display: none; }
+        .timeline-icon { background-color: var(--accent-primary); }
+        .interactive-map-placeholder {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            height: 400px;
+            margin: 2rem auto;
+            background: url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='a' patternUnits='userSpaceOnUse' width='20' height='20' patternTransform='scale(2) rotate(45)'%3E%3Crect x='0' y='0' width='100%25' height='100%25' fill='hsla(0,0%25,100%25,0)'/%3E%3Cpath d='M10-5V5M-5 0H5' stroke-width='1' stroke='hsla(148, 26%25, 66%, 0.1)' fill='none'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='800%25' height='800%25' transform='translate(0,0)' fill='url(%23a)'/%3E%3C/svg%3E"), var(--card-bg);
+            border: 2px dashed var(--accent-primary);
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        .hotspot {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            padding: 0.5rem 1rem;
+            background-color: var(--card-bg);
+            color: var(--text-primary);
+            border-radius: 9999px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            border: 1px solid var(--accent-primary);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        .hotspot:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+            background-color: var(--accent-primary);
+            color: white;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideIn { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .details-box {
+            display: none;
+            margin-top: 1rem;
+            padding: 1.5rem;
+            background-color: var(--card-bg);
+            border-radius: 0.5rem;
+            border-left: 4px solid var(--accent-secondary);
+            animation: fadeIn 0.5s;
+        }
+        /* Leaflet Map Styling */
+        #map {
+            height: 500px;
+            width: 100%;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            z-index: 10; /* Ensure map is interactive */
+        }
+        .leaflet-popup-content-wrapper {
+            border-radius: 8px;
+        }
+        .leaflet-popup-content {
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <header id="navbar" class="navbar sticky top-0 z-50 w-full border-b border-gray-200/50">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <a href="#" class="text-xl font-bold text-gray-800">嵐山風物詩</a>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#prologue" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">行前準備</a>
+                        <a href="#act1" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">序曲</a>
+                        <a href="#act2" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">散策</a>
+                        <a href="#interlude" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">午餐</a>
+                        <a href="#act3" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">漫遊</a>
+                        <a href="#act4" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">歸途</a>
+                        <a href="#map-section" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">互動地圖</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                     <button id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+                        <span class="sr-only">打開主選單</span>
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="md:hidden hidden">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#prologue" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">行前準備</a>
+                <a href="#act1" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">序曲</a>
+                <a href="#act2" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">散策</a>
+                <a href="#interlude" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">午餐</a>
+                <a href="#act3" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">漫遊</a>
+                <a href="#act4" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">歸途</a>
+                <a href="#map-section" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">互動地圖</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <section id="hero" class="text-center py-16">
+            <h1 class="text-4xl md:text-5xl font-bold tracking-tight">嵐山風物詩</h1>
+            <p class="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">一日深度遊互動行程：從峽谷火車到竹林禪心，從渡月橋光影到街巷美食，您的完美嵐山一日劇本。</p>
+        </section>
+
+        <!-- Prologue -->
+        <section id="prologue" class="py-12 md:py-16 space-y-8">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold">序章：嵐山一日，始於一月之前</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-gray-600">一趟完美的嵐山之旅，其序幕並非在踏上渡月橋的那一刻，而是在旅行整整一個月前，一場分秒必爭的數位任務中悄然拉開。本章節是您的行前作戰簡報，確保您在出發前，就已將嵐山最精彩的開場牢牢掌握在手中。</p>
+            </div>
+            <div class="max-w-3xl mx-auto space-y-4">
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200/80">
+                    <h3 class="text-xl font-semibold mb-2">核心觀念：戰場已變，舊地圖無用</h3>
+                    <p class="text-gray-600">首先必須建立一個絕對關鍵的認知：嵯峨野觀光鐵道的預約規則在2024年初進行了顛覆性的變革。所有舊的攻略皆已失效。<b>唯一的官方指定戰場，是全新的「嵯峨野觀光鐵道官方線上預約網站」</b>。全球所有旅客的需求都被引導至此單一的數位入口。</p>
+                </div>
+                
+                <details class="bg-white rounded-lg shadow-sm border border-gray-200/80 overflow-hidden">
+                    <summary class="p-6 cursor-pointer font-semibold text-lg flex justify-between items-center">
+                        第一步：確立零時 (Establish Zero-Hour)
+                        <svg class="w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </summary>
+                    <div class="p-6 border-t border-gray-200/80 text-gray-600">
+                        <p>車票在乘車日整整一個月前的<b>凌晨00:00（日本標準時間 JST）</b>準時開放。對於身在台灣（UTC+8）的您，這意味著搶票行動必須在 <b>目標乘車日期「前一個月再減一天」的晚間23:00</b> 展開。例如，若計畫於12月15日乘車，則必須在11月14日晚間23:00準時上線。</p>
+                        <p class="mt-2 font-medium"><b>行動指令：</b>在目標搶票日，設定一組於晚間22:45（UTC+8）響起的鬧鐘。</p>
+                    </div>
+                </details>
+
+                <details class="bg-white rounded-lg shadow-sm border border-gray-200/80 overflow-hidden">
+                    <summary class="p-6 cursor-pointer font-semibold text-lg flex justify-between items-center">
+                        第二步：平台演練與帳號建立
+                        <svg class="w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </summary>
+                    <div class="p-6 border-t border-gray-200/80 text-gray-600">
+                        <p>在作戰日來臨前至少48小時，必須完成平台整備。請務必至官方預約網站提前註冊帳號並妥善保存登入資訊，並進行一次「模擬演練」，熟悉介面。</p>
+                         <a href="https://ars-saganokanko.triplabo.jp/" target="_blank" class="mt-2 inline-block btn-secondary text-sm font-bold py-2 px-4 rounded-lg">前往官方預約網站</a>
+                    </div>
+                </details>
+
+                <details class="bg-white rounded-lg shadow-sm border border-gray-200/80 overflow-hidden">
+                    <summary class="p-6 cursor-pointer font-semibold text-lg flex justify-between items-center">
+                        第三步：目標選定與獲取
+                        <svg class="w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </summary>
+                    <div class="p-6 border-t border-gray-200/80 text-gray-600 space-y-3">
+                         <p>晚間23:00（UTC+8）準時行動。您的目標是為家庭三人預訂最優質的觀景體驗。</p>
+                         <p><b>車廂選擇：</b> 第五節的露天車廂「富貴號」是首選（視天氣而定）。</p>
+                         <p><b>座位選擇：</b> 最佳座位是窗側的<b>A席</b>與<b>D席</b>。在我們推薦的「龜岡→嵐山」方向，A席為順向靠窗，是絕對王者。</p>
+                    </div>
+                </details>
+
+                <div class="overflow-x-auto bg-white rounded-lg shadow-sm">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="p-4 font-semibold text-sm">優先級</th>
+                                <th class="p-4 font-semibold text-sm">作戰目標</th>
+                                <th class="p-4 font-semibold text-sm">車廂</th>
+                                <th class="p-4 font-semibold text-sm">座位</th>
+                                <th class="p-4 font-semibold text-sm">路線與班次</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white">
+                            <tr class="border-b">
+                                <td class="p-4">1 (Alpha)</td>
+                                <td class="p-4 font-medium">頂級體驗</td>
+                                <td class="p-4">富貴號</td>
+                                <td class="p-4">A席</td>
+                                <td class="p-4">龜岡 → 嵐山, 09:30</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="p-4">2 (Bravo)</td>
+                                <td class="p-4 font-medium">全天候首選</td>
+                                <td class="p-4">普通車廂</td>
+                                <td class="p-4">A席</td>
+                                <td class="p-4">龜岡 → 嵐山, 09:30</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="p-4">3 (Charlie)</td>
+                                <td class="p-4 font-medium">窗邊備案</td>
+                                <td class="p-4">任一車廂</td>
+                                <td class="p-4">D席</td>
+                                <td class="p-4">龜岡 → 嵐山, 09:30</td>
+                            </tr>
+                            <tr>
+                                <td class="p-4">4 (Delta)</td>
+                                <td class="p-4 font-medium">確保班次</td>
+                                <td class="p-4">任一車廂</td>
+                                <td class="p-4">A或D席</td>
+                                <td class="p-4">任何上午班次</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Act 1 -->
+        <section id="act1" class="py-12 md:py-16 space-y-8">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold">第一幕：序曲・峽谷的呼喚 (08:30 - 10:00)</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-gray-600">旅程始於京都市中心的現代化JR列車，中途經過一段寧靜的田園步行，最終登上懷舊的小火車，以保津川峽谷的壯麗風光作為您一日遊的華麗序幕。此路線將交通轉化為一場精心編排的敘事，終點是竹林小徑入口，實現無縫接軌的完美落地。</p>
+            </div>
+            <div class="max-w-3xl mx-auto mt-8">
+                <div class="space-y-8">
+                    <div class="timeline-item relative pl-8 pb-8">
+                        <div class="timeline-icon absolute -left-3.5 mt-1.5 h-8 w-8 rounded-full text-white flex items-center justify-center font-bold">1</div>
+                        <h4 class="font-semibold text-lg">08:40 | 搭乘JR列車</h4>
+                        <p class="text-gray-600 mt-1"><b>地點/平台：</b>JR京都站 31-33號月台。搭乘JR嵯峨野線往「龜岡」或「園部」方向的<b>普通(Local)</b>列車。</p>
+                    </div>
+                    <div class="timeline-item relative pl-8 pb-8">
+                         <div class="timeline-icon absolute -left-3.5 mt-1.5 h-8 w-8 rounded-full text-white flex items-center justify-center font-bold">2</div>
+                        <h4 class="font-semibold text-lg">09:06 | 抵達JR馬堀站</h4>
+                        <p class="text-gray-600 mt-1">準時下車。開始約10分鐘的地面轉移，從現代JR系統過渡到懷舊小火車體驗。</p>
+                    </div>
+                    <div class="timeline-item relative pl-8 pb-8">
+                         <div class="timeline-icon absolute -left-3.5 mt-1.5 h-8 w-8 rounded-full text-white flex items-center justify-center font-bold">3</div>
+                        <h4 class="font-semibold text-lg">09:07 - 09:20 | 執行地面轉移</h4>
+                        <p class="text-gray-600 mt-1">出站後跟隨「トロッコ亀岡駅」指示牌步行。沿途是寧靜的田園景觀，享受鄉間的清新空氣。</p>
+                    </div>
+                    <div class="timeline-item relative pl-8 pb-8">
+                         <div class="timeline-icon absolute -left-3.5 mt-1.5 h-8 w-8 rounded-full text-white flex items-center justify-center font-bold">4</div>
+                        <h4 class="font-semibold text-lg">09:25 | 前往月台</h4>
+                        <p class="text-gray-600 mt-1">使用手機上預訂成功的 <b>E-ticket QR Code</b> ，由站務人員掃描即可進站，無需兌換實體票券。</p>
+                    </div>
+                     <div class="timeline-item relative pl-8">
+                         <div class="timeline-icon absolute -left-3.5 mt-1.5 h-8 w-8 rounded-full text-white flex items-center justify-center font-bold">5</div>
+                        <h4 class="font-semibold text-lg">09:30 - 09:55 | 25分鐘的流動饗宴</h4>
+                        <p class="text-gray-600 mt-1">列車駛入保津川峽谷，欣賞碧綠溪水與兩岸林木。留意下方的「保津川遊船」並熱情揮手，是旅程最有趣的互動體驗。列車會在景觀點<b>刻意放慢速度</b>，提供絕佳拍照時機。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Act 2 -->
+        <section id="act2" class="py-12 md:py-16 space-y-8">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold">第二幕：散策・竹林與禪心 (10:00 - 12:30)</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-gray-600">歡迎來到嵐山之心。這不是急於打卡的觀光，而是一場隨心所欲的探索，讓身心沉浸於周遭的風景與氛圍。這條黃金路徑將引導您從自然的野趣，攀升至藝術家的私人天堂，觸碰千年的文學悲歡，最終在世界遺產的禪宗庭園中，達到心靈的昇華。</p>
+            </div>
+            <div class="interactive-map-placeholder">
+                <div class="hotspot" style="top: 20%; left: 30%;" onclick="openModal('bamboo')">🎋 竹林小徑</div>
+                <div class="hotspot" style="top: 45%; left: 65%;" onclick="openModal('okochi')">🏡 大河内山荘</div>
+                <div class="hotspot" style="top: 70%; left: 25%;" onclick="openModal('nonomiya')">⛩️ 野宮神社</div>
+                <div class="hotspot" style="top: 85%; left: 60%;" onclick="openModal('tenryuji')">🏯 天龍寺</div>
+            </div>
+        </section>
+        
+        <!-- Interlude -->
+        <section id="interlude" class="py-12 md:py-16 space-y-8 bg-gray-50 rounded-xl">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold">幕間：午餐的決斷 (12:30 - 14:00)</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-gray-600">此刻，您身處嵐山美食的十字路口，也是人潮最洶湧的一級戰區。時間，只有90分鐘。這不是一份普通的餐廳列表，而是一份作戰地圖，幫助您迅速做出不會後悔的決定。</p>
+            </div>
+            <div class="max-w-4xl mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-center">
+                    <div id="lunch-card-A" class="lunch-card p-4 bg-white rounded-lg shadow-sm border-2 border-transparent cursor-pointer hover:border-accent-primary transition-all">
+                        <h3 class="font-semibold">🖼️ 景觀至上</h3>
+                        <p class="text-sm text-gray-500">用時間換取無可取代的風景</p>
+                    </div>
+                    <div id="lunch-card-B" class="lunch-card p-4 bg-white rounded-lg shadow-sm border-2 border-transparent cursor-pointer hover:border-accent-primary transition-all">
+                        <h3 class="font-semibold">🇯🇵 豆腐之心</h3>
+                        <p class="text-sm text-gray-500">體驗最具代表性的嵐山料理</p>
+                    </div>
+                    <div id="lunch-card-C" class="lunch-card p-4 bg-white rounded-lg shadow-sm border-2 border-transparent cursor-pointer hover:border-accent-primary transition-all">
+                        <h3 class="font-semibold">📸 時尚輕食</h3>
+                        <p class="text-sm text-gray-500">快速、新潮、節省時間</p>
+                    </div>
+                    <div id="lunch-card-D" class="lunch-card p-4 bg-white rounded-lg shadow-sm border-2 border-transparent cursor-pointer hover:border-accent-primary transition-all">
+                        <h3 class="font-semibold">🏃‍♂️ 街頭美食</h3>
+                        <p class="text-sm text-gray-500">不想等待，最大化利用時間</p>
+                    </div>
+                </div>
+
+                <div id="lunch-details-container" class="mt-8 p-6 bg-white rounded-lg shadow-md min-h-[200px] hidden"></div>
+                
+                <div class="mt-8">
+                    <h3 class="text-xl font-semibold text-center mb-4">最終決策輔助圖表 (2025年預估)</h3>
+                    <div class="chart-container relative h-80 w-full max-w-2xl mx-auto">
+                        <canvas id="lunchChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Act 3 -->
+        <section id="act3" class="py-12 md:py-16 space-y-8">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold">第三幕：漫遊・渡月橋上的風景 (14:00 - 16:00)</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-gray-600">午餐過後，將腳步放慢，用雙眼與心去細細感受嵐山的生活美學。我們的散步將如同一場二幕劇：第一幕，在大街上展開一場獻給感官的尋寶遊戲；第二幕，緩緩走向那座橫跨古今的永恆地標——渡月橋。</p>
+            </div>
+            <div class="interactive-map-placeholder">
+                <div class="hotspot" style="top: 25%; left: 35%;" onclick="openModal('chirimen')">🎁 ちりめん細工館</div>
+                <div class="hotspot" style="top: 45%; left: 70%;" onclick="openModal('yojiya')">💄 よーじや</div>
+                <div class="hotspot" style="top: 65%; left: 45%;" onclick="openModal('matcha')">🍦 抹茶冰淇淋對決</div>
+                <div class="hotspot" style="top: 85%; left: 65%;" onclick="openModal('bridge')">🌉 渡月橋</div>
+            </div>
+        </section>
+
+        <!-- Act 4 -->
+        <section id="act4" class="py-12 md:py-16 space-y-8">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold">第四幕：歸途・光之森與慢電車 (16:00 - 終)</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-gray-600">當雙腳開始疲憊，我們邀請您將回家的路，不視為苦差事，而是當日旅程的最後一個詩意篇章。這是一場將「移動」轉化為休憩與發現之旅的精心策劃，完美銜接嵐山的自然風雅與京都鬧市的都會活力。</p>
+            </div>
+            <div class="max-w-3xl mx-auto space-y-8">
+                <div>
+                    <h3 class="text-xl font-semibold text-center">黃金時刻的抉擇 (16:00 - 日落)</h3>
+                    <p class="text-center text-gray-600 mt-2">在「光之林」點燈前，您面臨一個愉快的兩難抉擇：</p>
+                    <div class="mt-4 flex flex-col sm:flex-row gap-4 justify-center">
+                        <button class="btn-primary py-3 px-6 rounded-lg w-full sm:w-auto" onclick="showChoiceDetails('A')">♨️ 方案A：終極療癒 (強力推薦)</button>
+                        <button class="btn-secondary py-3 px-6 rounded-lg w-full sm:w-auto" onclick="showChoiceDetails('B')">☕ 方案B：最後巡禮</button>
+                    </div>
+                    <div id="choiceDetails" class="details-box"></div>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-semibold text-center">光之盛宴：夢幻的京友禪光林</h3>
+                     <p class="text-center text-gray-600 mt-2">日落後，嵐山車站展現出夜晚的靈魂。約600根包裹著「京友禪」染布的立柱同時亮起，創造出一片流光溢彩的超現實景觀。點燈時間為日落後至晚間21:00。</p>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-semibold text-center">搖晃的歸途：搭上深入京都日常的嵐電</h3>
+                     <p class="text-center text-gray-600 mt-2">搭上備受在地人喜愛的「嵐電」，它展示的並非名勝古蹟，而是京都最真實、未經修飾的日常面貌。使用ICOCA卡等交通IC卡刷卡進站，均一價250日圓直達終點站「四条大宮」。</p>
+                </div>
+                
+                 <div>
+                    <h3 class="text-xl font-semibold text-center">最後一哩路：從「大宮」到「河原町」的無縫轉乘</h3>
+                    <table class="w-full text-left border-collapse mt-4 bg-white rounded-lg shadow-sm">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="p-4 font-semibold text-sm">方式</th>
+                                <th class="p-4 font-semibold text-sm">優點</th>
+                                <th class="p-4 font-semibold text-sm">缺點</th>
+                                <th class="p-4 font-semibold text-sm">時間/費用 (2025預估)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white">
+                            <tr class="border-b">
+                                <td class="p-4 font-medium">A: 巴士</td>
+                                <td class="p-4">直觀，不需進出車站</td>
+                                <td class="p-4">可能受交通影響</td>
+                                <td class="p-4">~15分 / 230円</td>
+                            </tr>
+                            <tr>
+                                <td class="p-4 font-medium text-green-700">B: 阪急電車 (推薦)</td>
+                                <td class="p-4">最快、最準時、最便宜</td>
+                                <td class="p-4">需步行至隔壁車站</td>
+                                <td class="p-4">~4分 / 190円</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Map Section -->
+        <section id="map-section" class="py-12 md:py-16 space-y-8">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold">互動地圖：您的嵐山導航</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-gray-600">點擊地圖上的標記，查看各景點位置。地圖上的路線為推薦步行路徑，讓您對今日的旅程一目了然。</p>
+            </div>
+            <div id="map" class="mt-8"></div>
+        </section>
+        
+    </main>
+    
+    <footer class="bg-gray-100 mt-16">
+        <div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-gray-500 text-sm">
+            <p>&copy; 2025 嵐山風物詩互動行程 All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Modals -->
+    <div id="genericModal" class="modal">
+        <div class="modal-content">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors text-3xl font-light">&times;</button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+    
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // --- Data for Modals ---
+    const modalData = {
+        bamboo: {
+            title: '第一站 | 10:05 - 10:35 | 竹林小徑：漫步在翡翠色的光廊',
+            tabs: {
+                experience: { title: '感官體驗', content: '<p>請放慢腳步，將這段路視為一種動態的冥想。抬頭仰望，陽光穿過數萬根竹子，篩落成斑駁柔和的光影，日文稱之為「木漏れ日」(komorebi)。更珍貴的是聽覺，風穿過竹葉的沙沙聲，是被日本環境省評選為<b>「日本之音百選」</b>的國寶級天籟。</p>' },
+                protip: { title: '攝影提示', content: '<p>與其拍攝人像，請嘗試一個不同的角度：將鏡頭<b>垂直朝向天空</b>，專注於捕捉竹梢與光線交織而成的畫面。您會得到一張充滿張力、線條與光影的抽象畫作，更能體現竹林本身的宏偉。</p>' }
+            }
+        },
+        okochi: {
+            title: '第二站 | 10:35 - 11:20 | 大河内山荘庭園：一位明星畢生打造的隱世傑作',
+            tabs: {
+                garden: { title: '庭園亮點', content: '<p>典型的「回遊式借景庭園」，巧妙地將遠方的嵐山、比叡山都納入了庭園的畫框之中，創造出無限延伸的空間感。園內建築已被登錄為日本的國家有形文化財。</p>' },
+                story: { title: '巨星之夢', content: '<p>庭園是昭和時代的電影巨星——<b>大河內傳次郎</b>的畢生傑作。他將拍電影獲得的巨額財富，耗費人生後半段整整三十年的光陰與心血，打造出這座佔地約兩萬平方公尺的庭園。</p>' },
+                reward: { title: '寧靜的獎賞', content: '<p>1,000 日圓的門票為您篩去了絕大多數的觀光人潮，買下的是嵐山最稀缺的資源：<b>寧靜</b>。遊覽的終點，可憑門票兌換一份<b>抹茶與和菓子</b>，是精神上的完美沉澱。</p>' }
+            }
+        },
+        nonomiya: {
+            title: '第三站 | 11:20 - 11:40 | 野宮神社：聆聽《源氏物語》的愛情迴響',
+            tabs: {
+                shrine: { title: '神社看點', content: '<p>以未剝去樹皮的橡木搭建的<b>「黑木鳥居」</b>，是日本現存最古老的鳥居樣式。這裡以祈求良緣、學業而聞名。撫摸龜形的<b>「神石」</b>，據說願望便能實現。</p>' },
+                tale: { title: '文學場景', content: '<p>這裡是文學巨著<b>《源氏物語》「賢木之卷」</b>的舞台。在此地，光源氏前來探望即將遠行的舊情人六条御息所，上演了一幕充滿不捨、眷戀與無奈的告別。</p>' }
+            }
+        },
+        tenryuji: {
+            title: '第四站 | 11:40 - 12:30 | 天龍寺：世界遺產的禪意與龍之庭園',
+            tabs: {
+                strategy: { title: '參觀戰略', content: '<p><b>務必從竹林小徑的「北門」進入，最後由「正門」離開。</b>這是串連起整趟旅程、最高效且最具美學體驗的路線。從正門走出，便直接回到了嵐山最熱鬧的商店主街上。</p>' },
+                garden: { title: '曹源池庭園', content: '<p>出自禪師<b>夢窗疏石</b>之手的「庭之國寶」。其「借景」手法的極致運用，將遠方的嵐山與龜山化為庭園的一部分，打破了人造與自然的界線，創造出無限延伸的壯闊空間感。</p>'},
+                master: { title: '作庭家之魂', content: '<p><b>夢窗疏石</b>不僅是一位德高望重的禪宗高僧，更被譽為日本第一位真正的作庭家。他所運用的「借景」手法，是一種深刻的禪宗哲學體現，追求「我」與「世界」的融合。</p>'}
+            }
+        },
+        chirimen: {
+            title: '【給工藝愛好者】尋找「ちりめん細工」— 絲綢上的京都縮影',
+            content: '<p>尋找「嵐山ちりめん細工館」，店內有成千上萬件由絲綢縐布手工縫製的小物，從惹人憐愛的兔子、貓咪，到以假亂真的迷你壽司，都在靜靜地訴說著京都的雅緻。部分店家還提供製作不倒翁或花簪等飾品的體驗課程。</p>'
+        },
+        yojiya: {
+            title: '【給美妝探索家】拜訪「よーじや」— 百年美學的傳承',
+            content: '<p>京都百年美妝品牌<b>「よーじや」(Yojiya)</b> 的象徵是手鏡中的藝妓臉龐。除了經典的吸油面紙外，柚子護手霜、米糠美容袋「ぬか袋」也值得探索。嵐山的店家常與咖啡館結合，可點一杯印有招牌臉譜拉花的抹茶卡布奇諾。</p>'
+        },
+        matcha: {
+            title: '【給甜點鑑賞家】抹茶冰淇淋的家族對決',
+            content: '<p>將品嚐冰淇淋變成一場有趣的家庭評比。可以選擇：使用「宇治高級抹茶」的<b>經典濃郁派</b>；造型可愛、搭配五彩米菓的<b>新潮上鏡派</b>；或是在「新八茶屋」品嚐其榮獲國際大獎的<b>驚喜美食家</b>義式冰淇淋。</p>'
+        },
+        bridge: {
+            title: '渡月橋上：走入一幅流動的山水畫',
+            tabs: {
+                story: { title: '橋的故事', content: '<p>名字「渡月」源於鎌倉時代龜山天皇的舟遊宴會，他望見月亮彷彿正緩緩地走過橋的上空，詠歎出「宛如一輪無雲的明月正在渡橋」，從此得名。</p>'},
+                view: { title: '橋上風景', content: '<p>在橋的中央停下腳步，感受三百六十度的流動風景。往上游是保津川峽谷，往下游是寬闊的桂川。橋邊待命的人力車伕，也是一道獨特的風景。</p>'},
+                protip: { title: '最佳攝影點', content: '<p>想捕捉最經典的嵐山照片，<b>請務必走過整座橋</b>，到南側的<b>「嵐山公園（中之島地區）」</b>。從河岸邊回望，便能拍下以嵐山群山為背景，渡月橋橫亙於前的標準明信片構圖。</p>'}
+            }
+        }
+    };
+    
+    // --- Data for Lunch Section ---
+    const lunchData = {
+        A: {
+            title: "A套餐【景觀至上：給風景愛好者的獎勵】",
+            content: "<p><b>推薦店家：</b>嵐山よしむら (Arashiyama Yoshimura)</p><p><b>生動描寫：</b>彷彿坐進了一幅風景畫的特等席。眼前是橫跨大堰川的渡月橋，遠山如黛，流水潺潺。每日手打的蕎麥麵，入口是純粹的蕎麥香與滑順的喉越感。在這裡，每一口食物，都因窗外的絕景而昇華。</p><p><b>行動建議：</b>高風險，高回報。午餐尖峰時段排隊30分鐘到1小時以上是常態。若門口隊伍不超過10組人，可以一搏。</p>"
+        },
+        B: {
+            title: "B套餐【豆腐之心：品嚐京都的溫柔本味】",
+            content: "<p><b>推薦店家：</b>嵯峨とうふ稲 (Saga Tofu Ine)</p><p><b>生動描寫：</b>主角是一鍋溫潤的湯豆腐，口感如絲綢般滑過舌尖，大豆的甘甜在口中化開。另一道人氣料理「湯葉あんかけ丼」，是溫柔而飽足的美味。這不是味覺衝擊，而是一次溫柔的撫慰。</p><p><b>行動建議：</b>最能代表嵐山的選擇。本店就在天龍寺正門對面。如果隊伍太長，可步行3分鐘前往座位更多的「北店」。</p>"
+        },
+        C: {
+            title: "C套餐【時尚輕食：滿足少女心的快捷之選】",
+            content: "<p><b>推薦店家：</b>嵯峨野湯 (Sagano-yu)</p><p><b>生動描寫：</b>由百年錢湯改造的空間，充滿純白磁磚與復古水龍頭。招牌的「お豆腐パスタ」，用豆乳調製的奶油醬汁包裹著Q彈的生麵，溫潤而濃郁。這裡不僅是用餐，更是創造獨特回憶和Instagram時刻的地方。</p><p><b>行動建議：</b>速度與風格的完美結合。翻桌率較高，是節省時間的明智之選。</p>"
+        },
+        D: {
+            title: "D套餐【街頭美食巡禮：給靈活的探險家】",
+            content: "<p><b>推薦品項：</b>湯葉チーズ (Yuba Cheese)、みたらし団子 (Mitarashi Dango)、ゆばドーナツ (Yuba Doughnut)、% ARABICA 的拿鐵。</p><p><b>行動建議：</b>終極時間管理方案。家庭成員可以分頭行動，一人排隊買一樣，集合後到渡月橋邊的河岸長凳坐下，享受一場獨一無二的嵐山野餐，將用餐時間壓縮在45分鐘內。</p>"
+        }
+    };
+
+    // --- Data for Evening Choices ---
+    const choiceData = {
+        A: {
+            title: '【終極療癒：車站足湯體驗】',
+            content: '<p>對於那雙已帶領您們走過橋樑、穿過竹林的雙腳而言，沒有比車站內隱藏的寶藏——<b>「駅の足湯」</b>更好的獎勵了。這不僅僅是一池溫熱的水，而是引自正宗嵐山溫泉的泉水。費用為250日圓，且貼心地包含了一條可作為紀念的毛巾。</p><p><b>重要提示：</b>足湯營業時間通常只到傍晚18:00（17:30截止入場），需及早安排。</p>'
+        },
+        B: {
+            title: '【最後巡禮：咖啡或伴手禮】',
+            content: '<p>如果身體的立即休憩不是首要之務，您可以尋找一間能望見渡月橋的咖啡館，例如「% ARABICA 京都 嵐山店」。靜靜看著光影在保津川水面上的變化，讓風景最後一次深刻地烙印在心底。又或者，回到稍早引起您興趣的那家小店，隨意逛逛，最好的伴手禮，往往是在不經意間發現的。</p><p><b>溫馨提示：</b>% ARABICA 常有長長的排隊人龍，請評估時間。</p>'
+        }
+    };
+
+    // --- Modal Logic ---
+    window.openModal = (id) => {
+        const data = modalData[id];
+        if (!data) return;
+        const modal = document.getElementById('genericModal');
+        const modalBody = document.getElementById('modal-body');
+
+        let contentHtml = `<h3 class="text-2xl font-bold mb-4">${data.title}</h3>`;
+        if (data.tabs) {
+            contentHtml += '<div class="border-b border-gray-200 mb-4"><nav class="-mb-px flex space-x-6" aria-label="Tabs">';
+            Object.keys(data.tabs).forEach((key, index) => {
+                contentHtml += `<button class="tab-button whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 ${index === 0 ? 'active' : ''}" onclick="openTab(event, '${id}-${key}')">${data.tabs[key].title}</button>`;
+            });
+            contentHtml += '</nav></div>';
+            Object.keys(data.tabs).forEach((key, index) => {
+                contentHtml += `<div id="${id}-${key}" class="tab-content" style="display:${index === 0 ? 'block' : 'none'};">${data.tabs[key].content}</div>`;
+            });
+        } else {
+            contentHtml += data.content;
+        }
+        
+        modalBody.innerHTML = contentHtml;
+        modal.style.display = 'block';
+    };
+
+    window.closeModal = () => {
+        document.getElementById('genericModal').style.display = 'none';
+        document.getElementById('modal-body').innerHTML = '';
+    };
+    
+    window.onclick = function(event) {
+        const modal = document.getElementById('genericModal');
+        if (event.target == modal) {
+            closeModal();
+        }
+    }
+
+    window.openTab = (evt, tabName) => {
+        const parent = evt.target.closest('.modal-content');
+        const tabContents = parent.querySelectorAll('.tab-content');
+        tabContents.forEach(tc => tc.style.display = 'none');
+        
+        const tabButtons = parent.querySelectorAll('.tab-button');
+        tabButtons.forEach(tb => tb.classList.remove('active'));
+        
+        document.getElementById(tabName).style.display = 'block';
+        evt.currentTarget.classList.add('active');
+    };
+
+    // --- Lunch Section Logic ---
+    document.querySelectorAll('.lunch-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const lunchId = card.id.split('-')[2];
+            const details = lunchData[lunchId];
+            const container = document.getElementById('lunch-details-container');
+            
+            document.querySelectorAll('.lunch-card').forEach(c => c.classList.remove('border-accent-primary', 'bg-green-50'));
+            card.classList.add('border-accent-primary', 'bg-green-50');
+
+            container.innerHTML = `<h4 class="text-xl font-bold mb-2">${details.title}</h4>${details.content}`;
+            container.style.display = 'block';
+        });
+    });
+
+    // --- Evening Choice Logic ---
+    window.showChoiceDetails = (choiceId) => {
+        const details = choiceData[choiceId];
+        const container = document.getElementById('choiceDetails');
+        container.innerHTML = `<h4 class="text-lg font-semibold">${details.title}</h4>${details.content}`;
+        container.style.display = 'block';
+    };
+
+    // --- Lunch Chart ---
+    const lunchChartCtx = document.getElementById('lunchChart').getContext('2d');
+    const lunchChart = new Chart(lunchChartCtx, {
+        type: 'bar',
+        data: {
+            labels: ['景觀至上', '豆腐之心', '時尚輕食', '街頭美食'],
+            datasets: [
+                {
+                    label: '預估時間 (分鐘)',
+                    data: [95, 75, 60, 40],
+                    backgroundColor: 'rgba(129, 178, 154, 0.6)',
+                    borderColor: 'rgba(129, 178, 154, 1)',
+                    borderWidth: 1,
+                    yAxisID: 'yTime',
+                },
+                {
+                    label: '預估花費/人 (日圓)',
+                    data: [3500, 3000, 2200, 1500],
+                    backgroundColor: 'rgba(242, 204, 143, 0.6)',
+                    borderColor: 'rgba(242, 204, 143, 1)',
+                    borderWidth: 1,
+                    yAxisID: 'yCost',
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                yTime: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: { display: true, text: '時間 (分鐘)' }
+                },
+                yCost: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: { display: true, text: '花費 (日圓)' },
+                    grid: { drawOnChartArea: false },
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) { label += ': '; }
+                            if (context.parsed.y !== null) {
+                                if (context.dataset.yAxisID === 'yCost') {
+                                    label += new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(context.parsed.y);
+                                } else {
+                                    label += context.parsed.y + ' 分鐘';
+                                }
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // --- Scrollspy for Navigation ---
+    const sections = document.querySelectorAll('section');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const observerOptions = { root: null, rootMargin: '0px', threshold: 0.4 };
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const targetId = `#${entry.target.id}`;
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === targetId) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+        });
+    }, observerOptions);
+    sections.forEach(section => { if (section.id) observer.observe(section); });
+
+    // --- Mobile Menu ---
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    mobileMenuButton.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
+
+    // --- Leaflet Map Initialization ---
+    const map = L.map('map').setView([35.015, 135.675], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+    
+    const locations = [
+        { lat: 35.0180, lng: 135.6690, name: 'トロッコ嵐山駅 (小火車嵐山站)' },
+        { lat: 35.0170, lng: 135.6695, name: '竹林の小径 (竹林小徑入口)' },
+        { lat: 35.0175, lng: 135.6680, name: '大河内山荘庭園' },
+        { lat: 35.0163, lng: 135.6713, name: '野宮神社' },
+        { lat: 35.0158, lng: 135.6720, name: '天龍寺' },
+        { lat: 35.0125, lng: 135.6745, name: '渡月橋' },
+        { lat: 35.0145, lng: 135.6760, name: '嵐電嵐山駅 (含足湯)' }
+    ];
+
+    const pathCoords = [
+        [35.0180, 135.6690], // Torokko Arashiyama
+        [35.0170, 135.6695], // Bamboo Grove
+        [35.0163, 135.6713], // Nonomiya Shrine
+        [35.0158, 135.6720], // Tenryuji
+        [35.0145, 135.6760], // Randen Station
+        [35.0125, 135.6745]  // Togetsukyo Bridge
+    ];
+
+    const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-primary').trim();
+
+    locations.forEach(loc => {
+        L.marker([loc.lat, loc.lng]).addTo(map)
+            .bindPopup(`<b>${loc.name}</b>`);
+    });
+
+    L.polyline(pathCoords, {color: accentColor, weight: 5, opacity: 0.7, dashArray: '10, 5'}).addTo(map);
+
+});
+</script>
+</body>
+</html>

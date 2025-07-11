@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第五日 (20260623 週二)：大阪序曲，從浪速之心感受都市脈動</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Leaflet CSS for OpenStreetMap -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f8f9fa; /* 更明亮的淺灰色背景 */
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -11px;
+            top: 12px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background-color: #fb8500; /* 更有活力的主題橘色 */
+            border: 4px solid #f8f9fa;
+            z-index: 1;
+            transition: transform 0.3s ease;
+        }
+        .timeline-item:hover::before {
+            transform: scale(1.2);
+        }
+        .timeline-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 34px;
+            bottom: -34px;
+            width: 2px;
+            background-color: #ffb703; /* 輔助黃色 */
+        }
+        .card-tab.active {
+            background-color: #fb8500;
+            color: white;
+            box-shadow: 0 4px 14px 0 rgba(251, 133, 0, 0.39);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .neon-text {
+            text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #ff9e00, 0 0 20px #ff9e00, 0 0 25px #ff9e00, 0 0 30px #ff9e00, 0 0 35px #ff9e00;
+        }
+        .glico-bg {
+            background-image: url('https://images.unsplash.com/photo-1589451814294-27d65a6935a4?q=80&w=1200&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+        }
+        .pro-tip {
+            background-color: #e0f2fe;
+            border-left: 4px solid #0ea5e9;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+        #map {
+            height: 450px;
+            width: 100%;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            z-index: 10; /* Ensure map is clickable */
+        }
+    </style>
+</head>
+<body class="text-gray-800 antialiased">
+
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-20">
+        <div class="container mx-auto px-4 py-4">
+            <h1 class="text-2xl md:text-3xl font-bold text-center text-[#023047]">
+                <span class="text-[#fb8500]">第五日</span> | 大阪序曲：從浪速之心感受都市脈動
+            </h1>
+            <p class="text-center text-gray-500 mt-1 text-sm md:text-base">2026年6月23日 (週二)</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto p-4 md:p-8">
+        <div class="relative pl-8">
+            <!-- Phase 1: 移動日 -->
+            <div id="phase1" class="timeline-item relative pb-12">
+                <div class="flex items-center mb-4">
+                    <div class="bg-[#fb8500] text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold shadow-lg">1</div>
+                    <div class="ml-4">
+                        <h2 class="text-xl md:text-2xl font-bold text-gray-900">09:30 - 11:30 | 京阪轉移作戰</h2>
+                        <p class="text-gray-600">從京都基地至大阪新基地的高效戰略轉移</p>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 ml-4 transition-all duration-300 hover:shadow-2xl hover:scale-[1.01]">
+                    <h3 class="font-bold text-lg text-[#fb8500] mb-3 border-b-2 border-[#ffb703] pb-2 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+                        🎯 任務核心：選擇你的命運鐵道
+                    </h3>
+                    <p class="mb-4">京都到大阪，不存在絕對的「最佳」鐵路，只有「最適合」的選擇。您的決策將基於京都出發點與大阪目標點。</p>
+                    <div class="grid md:grid-cols-3 gap-4 text-center">
+                        <!-- JR -->
+                        <div class="border-2 border-blue-500 bg-blue-50 rounded-lg p-4 transform hover:-translate-y-1 transition-transform">
+                            <h4 class="font-bold text-blue-700">JR京都線 (巨獸)</h4>
+                            <p class="text-sm text-blue-600 mt-1">速度之王，<span class="font-bold">新快速</span>約29分鐘直達JR大阪站(梅田)。</p>
+                            <p class="text-lg font-bold text-blue-800 mt-2">¥580</p>
+                            <p class="text-xs mt-1">適合：靠近JR京都站出發，追求速度。</p>
+                        </div>
+                        <!-- 阪急 -->
+                        <div class="border-2 border-red-800 bg-red-50 rounded-lg p-4 transform hover:-translate-y-1 transition-transform">
+                            <h4 class="font-bold text-red-900">阪急京都本線 (市中心連接者)</h4>
+                            <p class="text-sm text-red-700 mt-1">經濟實惠，<span class="font-bold">特急</span>約43分鐘從河原町到梅田。</p>
+                            <p class="text-lg font-bold text-red-900 mt-2">¥410</p>
+                             <p class="text-xs mt-1">適合：從四条河原町、烏丸等京都市中心出發。</p>
+                        </div>
+                        <!-- 京阪 -->
+                        <div class="border-2 border-green-600 bg-green-50 rounded-lg p-4 transform hover:-translate-y-1 transition-transform">
+                            <h4 class="font-bold text-green-800">京阪本線 (南方策略)</h4>
+                            <p class="text-sm text-green-700 mt-1">輕鬆轉乘，<span class="font-bold">特急</span>約50分鐘從祇園四条到淀屋橋。</p>
+                            <p class="text-lg font-bold text-green-900 mt-2">¥430</p>
+                            <p class="text-xs mt-1">適合：目的地在心齋橋/難波，或持有大阪周遊券。</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 bg-red-100 border-l-4 border-red-500 text-red-800 p-4 rounded-r-lg">
+                        <p class="font-bold">⚠️ 終極挑戰：大阪/梅田車站迷宮</p>
+                        <p class="text-sm mt-1">抵達JR大阪站後，這是本日最大挑戰！忽略「出口」指標，專心尋找並跟隨地上的 <span class="font-bold text-red-600">紅色「Osaka Metro 御堂筋線 (Midosuji Line)」</span> 指標。紅色是您在迷宮中的生命線！</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 2: 登陸整備 -->
+            <div id="phase2" class="timeline-item relative pb-12">
+                <div class="flex items-center mb-4">
+                    <div class="bg-[#fb8500] text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold shadow-lg">2</div>
+                    <div class="ml-4">
+                        <h2 class="text-xl md:text-2xl font-bold text-gray-900">11:30 - 13:30 | 大阪登陸協議</h2>
+                        <p class="text-gray-600">高效入住、午餐狩獵與午後戰略規劃</p>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 ml-4 transition-all duration-300 hover:shadow-2xl hover:scale-[1.01]">
+                    <h3 class="font-bold text-lg text-[#fb8500] mb-3 border-b-2 border-[#ffb703] pb-2 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+                        ⚡ 第一階段：行李解放任務
+                    </h3>
+                    <p class="mb-4">抵達飯店，無論能否入住，立即執行「行李寄放」指令：<span class="font-bold text-red-600">「荷物(にもつ)、預(あず)かって、いただけますか (NIMOTSU, AZUKATTE, ITADAKEMASUKA?)」</span>。解放雙手是奪回主動權的第一步！</p>
+                    
+                    <h3 class="font-bold text-lg text-[#fb8500] mt-6 mb-3 border-b-2 border-[#ffb703] pb-2 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                        🍔 第二階段：午餐狩獵方法論
+                    </h3>
+                    <p class="mb-4">不要執著於名店！在大阪，美味無所不在。選擇你的狩獵方式：</p>
+                    <div class="space-y-3">
+                        <div class="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-400 transition-colors">
+                            <p class="font-bold">【百貨公司法】向上或向下探索</p>
+                            <p class="text-sm">B1/B2的「デパ地下」(Depachika)有精緻便當，頂樓餐廳街則提供舒適的用餐環境。</p>
+                        </div>
+                        <div class="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-400 transition-colors">
+                            <p class="font-bold">【商店街法】鑽進在地的動脈</p>
+                            <p class="text-sm">尋找「商店街」(Shotengai)，感受最真實的城市生活脈動與高性價比美食。</p>
+                        </div>
+                        <div class="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-400 transition-colors">
+                            <p class="font-bold">【車站共構法】在交通樞紐內解決</p>
+                            <p class="text-sm">梅田或難波車站本身就是一座巨大的美食城，跟隨「グルメ」(Gourmet)指示牌前進。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 3: 黑門市場 -->
+            <div id="phase3" class="timeline-item relative pb-12">
+                <div class="flex items-center mb-4">
+                    <div class="bg-[#fb8500] text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold shadow-lg">3</div>
+                    <div class="ml-4">
+                        <h2 class="text-xl md:text-2xl font-bold text-gray-900">13:30 - 16:00 | 黑門市場美食激鬥</h2>
+                        <p class="text-gray-600">潛入「大阪的廚房」，體驗「食い倒れ」精神！</p>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 ml-4 transition-all duration-300 hover:shadow-2xl hover:scale-[1.01]">
+                    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded-r-lg mb-4">
+                        <p class="font-bold">⚔️ 開戰前三大守則</p>
+                        <ul class="list-disc list-inside text-sm mt-2 space-y-1">
+                            <li><span class="font-bold">禁止移動攻擊：</span>在店家提供的「安全區」或市場內的<span class="font-bold">免費休息區</span>享用戰利品。</li>
+                            <li><span class="font-bold">預算管理是關鍵：</span>先偵查，後攻擊，小心海膽、和牛等「高級魔王」。</li>
+                            <li><span class="font-bold">分進合擊，共享戰果：</span>三人小隊分頭排隊，效率最大化！</li>
+                        </ul>
+                    </div>
+                    <h3 class="font-bold text-lg text-[#fb8500] mb-3 border-b-2 border-[#ffb703] pb-2 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v6m3-6v6m3-6v6M3 16h18M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                        🦞 菁英美食攻擊清單
+                    </h3>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="relative rounded-lg overflow-hidden group">
+                            <img src="https://images.unsplash.com/photo-1607301405397-f0a4a86bd225?q=80&w=800&auto=format&fit=crop" alt="鮪魚" class="w-full h-40 object-cover transition-transform duration-300 group-hover:scale-110" onerror="this.onerror=null;this.src='https://placehold.co/800x400/f87171/ffffff?text=鮪魚圖片';">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-4">
+                                <h4 class="text-white font-bold text-lg">鮪魚大腹 (まぐろや黒銀)</h4>
+                            </div>
+                        </div>
+                        <div class="relative rounded-lg overflow-hidden group">
+                            <img src="https://images.unsplash.com/photo-1599791211228-66185449141f?q=80&w=800&auto=format&fit=crop" alt="烤扇貝" class="w-full h-40 object-cover transition-transform duration-300 group-hover:scale-110" onerror="this.onerror=null;this.src='https://placehold.co/800x400/34d399/ffffff?text=烤扇貝圖片';">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-4">
+                                <h4 class="text-white font-bold text-lg">現烤奶油扇貝 (うお福)</h4>
+                            </div>
+                        </div>
+                        <div class="relative rounded-lg overflow-hidden group">
+                            <img src="https://images.unsplash.com/photo-1615332353311-a4350b545d30?q=80&w=800&auto=format&fit=crop" alt="和牛" class="w-full h-40 object-cover transition-transform duration-300 group-hover:scale-110" onerror="this.onerror=null;this.src='https://placehold.co/800x400/fbbf24/ffffff?text=和牛圖片';">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-4">
+                                <h4 class="text-white font-bold text-lg">A5和牛串 (和牛武蔵)</h4>
+                            </div>
+                        </div>
+                        <div class="relative rounded-lg overflow-hidden group">
+                            <img src="https://images.unsplash.com/photo-1598170845022-17333003a64d?q=80&w=800&auto=format&fit=crop" alt="草莓大福" class="w-full h-40 object-cover transition-transform duration-300 group-hover:scale-110" onerror="this.onerror=null;this.src='https://placehold.co/800x400/f472b6/ffffff?text=草莓大福圖片';">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-4">
+                                <h4 class="text-white font-bold text-lg">草莓大福 (おた福堂)</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 4: 電電城 -->
+            <div id="phase4" class="timeline-item relative pb-12">
+                <div class="flex items-center mb-4">
+                    <div class="bg-[#fb8500] text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold shadow-lg">4</div>
+                    <div class="ml-4">
+                        <h2 class="text-xl md:text-2xl font-bold text-gray-900">16:00 - 19:00 | 潛入電電城</h2>
+                        <p class="text-gray-600">從菜市場到異次元的次文化聖地巡禮</p>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 ml-4 transition-all duration-300 hover:shadow-2xl hover:scale-[1.01]">
+                    <p class="mb-4">歡迎來到大阪的次文化心臟！主戰區在主幹道「堺筋」西側的巷弄，暱稱<span class="font-bold text-purple-600">「御宅道 (Ota-Road)」</span>。</p>
+                    <div class="p-4 bg-purple-50 border-l-4 border-purple-500 rounded-r-lg mb-4">
+                        <p class="font-bold">👨‍👩‍👧 混合興趣家庭作戰方針</p>
+                        <p class="text-sm mt-1">「御宅道」是女兒的主線任務，而寬闊的「堺筋」則是父母的休息基地與緩衝帶，可在此找到大型電器行與咖啡館。</p>
+                    </div>
+                    <h3 class="font-bold text-lg text-[#fb8500] mb-3 border-b-2 border-[#ffb703] pb-2 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                        🎮 朝聖地圖
+                    </h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start"><span class="text-purple-600 font-bold mr-2 w-5 text-center">1.</span><div><span class="font-semibold">Animate 大阪日本橋店：</span>動漫百貨公司，商品最齊全，適合所有人的第一站。</div></li>
+                        <li class="flex items-start"><span class="text-purple-600 font-bold mr-2 w-5 text-center">2.</span><div><span class="font-semibold">Volks / Joshin Super Kids Land：</span>模型與公仔的藝術殿堂，欣賞將虛擬化為實體的藝術。</div></li>
+                        <li class="flex items-start"><span class="text-purple-600 font-bold mr-2 w-5 text-center">3.</span><div><span class="font-semibold">Taito Station / GiGO：</span>體驗夾娃娃機、音樂節奏遊戲，感受聲光電的交響曲。</div></li>
+                        <li class="flex items-start"><span class="text-purple-600 font-bold mr-2 w-5 text-center">4.</span><div><span class="font-semibold">Gachapon no Depāto (扭蛋百貨店)：</span>適合全家的完美小型活動，在數百台機器中用銅板帶走未知的驚喜！</div></li>
+                    </ul>
+                     <div class="pro-tip">
+                        <p class="font-bold flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>達人秘笈</p>
+                        <p class="text-sm mt-1">許多店家提供<span class="font-semibold">免稅服務 (Tax-Free)</span>，購物滿額時記得出示護照。另外，二手店 (如 K-BOOKS、Mandarake) 是尋寶的好去處！</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Phase 5: 道頓堀 -->
+            <div id="phase5" class="timeline-item relative">
+                 <div class="flex items-center mb-4">
+                    <div class="bg-[#fb8500] text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold shadow-lg">5</div>
+                    <div class="ml-4">
+                        <h2 class="text-xl md:text-2xl font-bold text-gray-900">19:00後 | 道頓堀狂想曲</h2>
+                        <p class="text-gray-600">霓虹燈、固力果與B級美食的終極指南</p>
+                    </div>
+                </div>
+                <div class="bg-gray-900 rounded-xl shadow-lg p-1 ml-4 transition-all duration-300 hover:shadow-2xl hover:scale-[1.01] glico-bg">
+                    <div class="bg-black bg-opacity-75 p-6 rounded-lg">
+                        <h3 class="font-bold text-2xl text-center mb-4"><span class="text-yellow-300 neon-text">潛入！大阪的霓虹心臟</span></h3>
+                        <p class="text-white text-center mb-6">拋開矜持，忘掉卡路里，準備好體驗大阪人最自豪的<span class="font-bold text-yellow-300 text-lg">「食い倒れ」(Kuidaore)</span> 精神！</p>
+                        
+                        <!-- Tabs -->
+                        <div class="flex justify-center space-x-1 md:space-x-4 mb-6" id="dotonbori-tabs">
+                            <button data-tab="tab-1" class="card-tab active px-3 py-2 rounded-full text-xs md:text-sm font-semibold transition-all duration-300">📸 霓虹朝聖</button>
+                            <button data-tab="tab-2" class="card-tab px-3 py-2 rounded-full text-xs md:text-sm font-semibold transition-all duration-300">🐙 美食猛攻</button>
+                            <button data-tab="tab-3" class="card-tab px-3 py-2 rounded-full text-xs md:text-sm font-semibold transition-all duration-300">🍜 拉麵對決</button>
+                            <button data-tab="tab-4" class="card-tab px-3 py-2 rounded-full text-xs md:text-sm font-semibold transition-all duration-300">⛵️ 河上巡遊</button>
+                        </div>
+
+                        <!-- Tab Content -->
+                        <div id="tab-content-container" class="text-white min-h-[150px]">
+                            <div id="tab-1" class="tab-content active">
+                                <h4 class="font-bold text-lg text-yellow-300 mb-2 text-center">巨型招牌打卡清單</h4>
+                                <ul class="list-none space-y-2 text-center text-sm md:text-base">
+                                    <li>固力果跑跑人 (Glico Running Man) - <span class="text-gray-300 text-xs">必拍經典</span></li>
+                                    <li>道頓堀螃蟹道樂 (Kani Doraku) - <span class="text-gray-300 text-xs">會動的巨蟹</span></li>
+                                    <li>唐吉訶德財神爺摩天輪 - <span class="text-gray-300 text-xs">空中俯瞰道頓堀</span></li>
+                                </ul>
+                            </div>
+                            <div id="tab-2" class="tab-content">
+                                <h4 class="font-bold text-lg text-yellow-300 mb-2 text-center">『粉もん』三項鐵人挑戰</h4>
+                                <ul class="list-none space-y-2 text-center text-sm md:text-base">
+                                    <li><span class="font-bold">章魚燒：</span>あっちち本舗 (外皮極酥、內餡滑順)</li>
+                                    <li><span class="font-bold">大阪燒：</span>美津の (必試無麵粉的「山芋燒」)</li>
+                                    <li><span class="font-bold">串炸：</span>串かつだるま (體驗「禁止二次沾醬」規則！)</li>
+                                </ul>
+                            </div>
+                            <div id="tab-3" class="tab-content">
+                                <h4 class="font-bold text-lg text-yellow-300 mb-2 text-center">選擇你的拉麵哲學</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-center">
+                                    <div>
+                                        <p class="font-bold">金龍ラーメン (豪邁共享)</p>
+                                        <p class="text-sm">湯頭清爽，白飯、泡菜、韭菜免費加到爽！</p>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold">一蘭 (專注獨享)</p>
+                                        <p class="text-sm">完全客製化，專屬「味集中座位」。</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="tab-4" class="tab-content">
+                                 <h4 class="font-bold text-lg text-yellow-300 mb-2 text-center">道頓堀水上觀光船</h4>
+                                 <p class="text-center text-sm md:text-base">從不同角度欣賞霓虹燈！約20分鐘的航程，帶你穿梭橋下，感受水都魅力。持大阪周遊券可免費搭乘。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- OpenStreetMap Section -->
+        <div id="map-section" class="mt-12 bg-white rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-2xl">
+            <h2 class="text-xl md:text-2xl font-bold text-gray-900 mb-4 text-center flex items-center justify-center">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-3 text-[#fb8500]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                本日行程景點地圖
+            </h2>
+            <div id="map"></div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-8 px-4">
+        <p class="text-lg font-bold text-[#023047]">🎉 恭喜完成大阪初日探險！🎉</p>
+        <p class="text-gray-600 mt-1">好好休息，準備迎接第二天的精彩行程！</p>
+    </footer>
+
+    <!-- Leaflet JS for OpenStreetMap -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+        // Tab functionality for Dotonbori section
+        const tabs = document.getElementById('dotonbori-tabs');
+        if (tabs) {
+            const tabContentContainer = document.getElementById('tab-content-container');
+            tabs.addEventListener('click', (event) => {
+                const targetButton = event.target.closest('button');
+                if (!targetButton) return;
+
+                // Update button styles
+                tabs.querySelectorAll('.card-tab').forEach(button => button.classList.remove('active'));
+                targetButton.classList.add('active');
+
+                // Update content visibility
+                const tabId = targetButton.dataset.tab;
+                tabContentContainer.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                const activeTabContent = document.getElementById(tabId);
+                if(activeTabContent) {
+                    activeTabContent.classList.add('active');
+                }
+            });
+        }
+
+        // OpenStreetMap Initialization
+        document.addEventListener('DOMContentLoaded', function () {
+            // Define locations: [lat, lon], name, description
+            const locations = [
+                { coords: [34.702485, 135.495951], name: '梅田 (大阪車站)', desc: '交通樞紐與迷宮起點' },
+                { coords: [34.66878, 135.50689], name: '黑門市場', desc: '大阪的廚房' },
+                { coords: [34.66438, 135.5071], name: '電電城 (御宅道)', desc: '次文化聖地' },
+                { coords: [34.66901, 135.50155], name: '道頓堀 (固力果跑跑人)', desc: '霓虹美食天堂' }
+            ];
+
+            // Initialize map
+            const map = L.map('map').setView(locations[2].coords, 14); // Center on Den Den Town
+
+            // Add tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            const points = [];
+
+            // Add markers and build polyline points
+            locations.forEach((loc, index) => {
+                const marker = L.marker(loc.coords).addTo(map)
+                    .bindPopup(`<b>${index + 1}. ${loc.name}</b><br>${loc.desc}`);
+                points.push(loc.coords);
+            });
+            
+            // Create a polyline from an array of LatLng points
+            const polyline = L.polyline(points, {color: '#fb8500', weight: 5}).addTo(map);
+
+            // Zoom the map to the polyline
+            map.fitBounds(polyline.getBounds(), {padding: [50, 50]});
+        });
+    </script>
+
+</body>
+</html>

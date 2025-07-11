@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第二日 金閣閃耀、市井漫步與購物全攻略</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <style>
+        /* --- 全局與基礎風格 --- */
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f8f9fa; /* 更柔和的背景色 */
+            color: #212529; /* 深灰色，提高可讀性 */
+        }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Noto Serif TC', serif; }
+        .section {
+            padding-top: 88px; /* 導覽列高度的偏移 */
+            margin-top: -88px;
+        }
+
+        /* --- 頂部導覽列 --- */
+        .navbar {
+            transition: background-color 0.3s, box-shadow 0.3s;
+            border-bottom: 1px solid transparent;
+        }
+        .navbar-scrolled {
+            background-color: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .nav-link {
+            position: relative;
+            transition: color 0.3s;
+            padding: 24px 0;
+            font-weight: 500;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 3px;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #c0842b; /* 金色 */
+            transition: width 0.3s ease-in-out;
+        }
+        .nav-link:hover::after, .nav-link.active::after { width: 100%; }
+        .nav-link:hover, .nav-link.active { color: #c0842b; }
+
+        /* --- 內容卡片與區塊 --- */
+        .content-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.03), 0 2px 4px -2px rgb(0 0 0 / 0.03);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .content-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.07);
+        }
+        
+        /* --- 互動元件通用樣式 --- */
+        .interactive-tab-button.active {
+            font-weight: 700;
+            color: #111827;
+        }
+        .interactive-tab-content { display: none; }
+        .interactive-tab-content.active { display: block; }
+
+        /* --- 錦市場區塊 --- */
+        .nishiki-task-card.completed { background-color: #f0fdf4; }
+        .nishiki-task-card.completed .task-title { text-decoration: line-through; color: #4ade80; }
+        .details-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .details-content.open { max-height: 1000px; }
+
+        /* --- 商店街區塊 --- */
+        .shinkyogoku-card { border-left: 5px solid #db2777; }
+        .teramachi-card { border-left: 5px solid #0d9488; }
+
+        /* --- 四条河原町區塊 --- */
+        .kawaramachi-tab-active { background-color: #0F766E; color: #F0EAD6; }
+        .kawaramachi-tab-inactive { background-color: #E5E7EB; color: #374151; }
+
+        /* --- 通用彈出視窗 (Modal) --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000; opacity: 0; visibility: hidden;
+            transition: all 0.3s ease-in-out;
+        }
+        .modal-overlay.visible { opacity: 1; visibility: visible; }
+        .modal-content {
+            background: #f8f9fa; padding: 2rem; border-radius: 0.5rem;
+            max-width: 90%; width: 650px; max-height: 90vh;
+            overflow-y: auto; transform: scale(0.95);
+            transition: all 0.3s ease-in-out;
+        }
+        .modal-overlay.visible .modal-content { transform: scale(1); }
+        
+        /* --- Chart.js 容器 --- */
+        .chart-container { position: relative; width: 100%; margin: auto; height: 300px; }
+        
+        /* --- OpenStreetMap 地圖 --- */
+        #map { height: 500px; border-radius: 0.75rem; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.03); }
+        .leaflet-popup-content-wrapper { border-radius: 8px; }
+        .leaflet-popup-content { font-family: 'Noto Sans TC', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <!-- 頂部固定導覽列 -->
+    <header id="main-header" class="navbar sticky top-0 z-50">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center">
+                <div class="text-2xl font-bold text-amber-900 py-4">京都第二天・完全攻略</div>
+                <div class="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-700">
+                    <a href="#kinkakuji" class="nav-link">金閣寺</a>
+                    <a href="#nishiki" class="nav-link">錦市場</a>
+                    <a href="#shotengai" class="nav-link">商店街</a>
+                    <a href="#kawaramachi" class="nav-link">四条河原町</a>
+                    <a href="#map-section" class="nav-link">地理位置</a>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="text-slate-700 focus:outline-none">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden bg-white/95 backdrop-blur-sm">
+            <a href="#kinkakuji" class="block py-2 px-4 text-sm text-slate-700 hover:bg-slate-100">金閣寺</a>
+            <a href="#nishiki" class="block py-2 px-4 text-sm text-slate-700 hover:bg-slate-100">錦市場</a>
+            <a href="#shotengai" class="block py-2 px-4 text-sm text-slate-700 hover:bg-slate-100">商店街</a>
+            <a href="#kawaramachi" class="block py-2 px-4 text-sm text-slate-700 hover:bg-slate-100">四条河原町</a>
+            <a href="#map-section" class="block py-2 px-4 text-sm text-slate-700 hover:bg-slate-100">地理位置</a>
+        </div>
+    </header>
+
+    <main class="py-16 px-4 md:px-8">
+        <div class="max-w-7xl mx-auto space-y-24">
+
+            <!-- 1. 金閣寺 -->
+            <section id="kinkakuji" class="section">
+                <div class="text-center mb-12">
+                    <h2 class="text-4xl md:text-5xl font-bold text-slate-800">上午：金閣寺</h2>
+                    <p class="mt-4 text-lg max-w-3xl mx-auto text-slate-600">一場關於光影、歷史與虛實的互動導覽</p>
+                </div>
+                <div class="content-card p-6 md:p-8">
+                    <div class="bg-amber-50 border-l-4 border-amber-500 text-amber-800 p-4 rounded-lg mb-8">
+                        <h3 class="text-xl font-bold mb-2">最新資訊（2024/2025）</h3>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li><strong>開放時間：</strong> 09:00 - 17:00 (全年無休)</li>
+                            <li><strong>參拜費用：</strong> 成人 500日圓，中小學生 300日圓。</li>
+                            <li><strong>參觀提醒：</strong> 建議早上早點抵達，避開人潮，享受鏡湖池最平靜的倒影。</li>
+                        </ul>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                        <div id="kinkaku-diagram" class="w-full max-w-sm mx-auto border-2 border-slate-200 bg-white rounded-lg p-4 shadow-inner">
+                            <!-- JS 動態生成 -->
+                        </div>
+                        <div id="kinkaku-layer-info" class="bg-slate-50 p-6 rounded-lg min-h-[300px]"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. 錦市場 -->
+            <section id="nishiki" class="section">
+                <div class="text-center mb-12">
+                    <h2 class="text-4xl md:text-5xl font-bold text-slate-800">中午：錦市場</h2>
+                    <p class="mt-4 text-lg max-w-3xl mx-auto text-slate-600">給美食獵人的終極任務書</p>
+                </div>
+                <div class="content-card p-6 md:p-8">
+                    <div class="bg-red-50 border-l-4 border-red-500 text-red-800 p-4 rounded-lg mb-8">
+                        <h3 class="text-xl font-bold mb-3">序章：開戰前的作戰守則</h3>
+                        <p><strong>首要原則：禁止邊走邊吃！</strong> 這是市場的官方規定，也是對店家與其他遊客的尊重。請務必在店家旁<strong class="font-semibold">站定品嚐</strong>，並將垃圾交還店家處理。</p>
+                        <p class="mt-2"><strong>最新提醒：</strong> 由於遊客增多，部分店家會明確標示用餐區域，請務必遵守。</p>
+                    </div>
+                    
+                    <div class="sticky top-[80px] bg-white/90 backdrop-blur-md z-10 py-4 mb-6 border-b border-slate-200">
+                        <div id="nishiki-tabs" class="flex flex-wrap justify-center gap-2">
+                            <!-- JS 動態生成 -->
+                        </div>
+                    </div>
+
+                    <div id="nishiki-tab-contents">
+                        <!-- JS 動態生成 -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. 商店街 -->
+            <section id="shotengai" class="section">
+                <div class="text-center mb-12">
+                    <h2 class="text-4xl md:text-5xl font-bold text-slate-800">下午：新京極 vs. 寺町京極</h2>
+                    <p class="mt-4 text-lg max-w-3xl mx-auto text-slate-600">三小時完美雙線互動攻略</p>
+                </div>
+                <div class="content-card p-6 md:p-8">
+                    <div class="sticky top-[80px] bg-white/90 backdrop-blur-md z-10 shadow-sm mb-8 -mx-6 md:-mx-8 -mt-6 md:-mt-8">
+                        <div class="max-w-5xl mx-auto flex justify-center items-center space-x-2 sm:space-x-4 md:space-x-8 p-3 text-sm md:text-base font-medium text-stone-500 overflow-x-auto">
+                            <!-- JS 動態生成 -->
+                        </div>
+                    </div>
+                    <div id="shotengai-contents">
+                        <!-- JS 動態生成 -->
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 4. 四条河原町 -->
+            <section id="kawaramachi" class="section">
+                 <div class="text-center mb-12">
+                    <h2 class="text-4xl md:text-5xl font-bold text-slate-800">傍晚：四条河原町之夜</h2>
+                    <p class="mt-4 text-lg max-w-3xl mx-auto text-slate-600">給品味家庭的互動購物與晚餐策略</p>
+                </div>
+                <div class="content-card p-6 md:p-8">
+                    <nav class="flex justify-center mb-8 rounded-lg shadow-sm p-1 bg-stone-200 max-w-sm mx-auto">
+                        <button id="show-shopping" class="w-1/2 py-2 px-4 rounded-md text-sm font-medium focus:outline-none transition-colors kawaramachi-tab-active">🛍️ 購物策略</button>
+                        <button id="show-dining" class="w-1/2 py-2 px-4 rounded-md text-sm font-medium focus:outline-none transition-colors kawaramachi-tab-inactive">🍽️ 晚餐決策</button>
+                    </nav>
+                    <div id="shopping-section">
+                         <!-- JS 動態生成 -->
+                    </div>
+                    <div id="dining-section" class="hidden">
+                         <!-- JS 動態生成 -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. 地理位置地圖 -->
+            <section id="map-section" class="section">
+                <div class="text-center mb-12">
+                    <h2 class="text-4xl md:text-5xl font-bold text-slate-800">地理位置總覽</h2>
+                    <p class="mt-4 text-lg max-w-3xl mx-auto text-slate-600">點擊地圖上的標記，查看各景點的相對位置。</p>
+                </div>
+                <div class="content-card p-2">
+                    <div id="map"></div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+    
+    <!-- 通用彈出視窗 -->
+    <div id="modal-container" class="modal-overlay">
+        <div class="modal-content">
+            <div class="flex justify-between items-start border-b pb-3 mb-4">
+                <h3 id="modal-title" class="text-2xl font-bold text-slate-800"></h3>
+                <button id="modal-close" class="text-3xl text-slate-500 hover:text-slate-800 leading-none">&times;</button>
+            </div>
+            <div id="modal-body" class="prose max-w-none prose-p:text-slate-700"></div>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // --- 全局資料 ---
+    const AppData = {
+        kinkakuji: {
+            layers: {
+                '3': { title: '三層「究竟頂」：禪宗與君權的頂峰', content: `<p>採用中國唐代風格的「禪宗佛殿造」，擁有獨特的火焰形「花頭窗」。這裡是純粹的宗教空間。</p><p>義滿將自己虔信的禪宗置於最高點，象徵精神世界凌駕世俗權力。屋頂的金鳳凰是「聖天子」治世的祥瑞之鳥，其意圖昭然若揭。</p>` },
+                '2': { title: '二層「潮音洞」：武家權力的正午', content: `<p>採用鎌倉時代以來武士階級的「武家造」風格，更為封閉、莊重，象徵武士的務實與權威。</p><p>從這一層開始，內外都奢華地鋪上金箔，代表足利義滿自身的階級——武家的權力，正處於如日中天的輝煌時刻。</p>` },
+                '1': { title: '一層「法水院」：公家貴族的黃昏', content: `<p>採用平安時代貴族宅邸的「寢殿造」風格，特點是開放式結構，與池水親近，營造優雅氛圍。</p><p>此層完全沒有貼金箔，保留木材素雅本色。這是足利義滿的政治姿態：將代表舊時代權力的公家文化，置於自己權力結構的最底層。</p>` }
+            },
+            garden: [
+                { title: '陸舟之松', content: '<p>據傳由足利義滿親手栽種，樹齡超過六百年。其樹冠被修剪成一艘帆船的形狀，船頭朝向西方——阿彌陀佛的極樂淨土。</p>' },
+                { title: '龍門瀑與鯉魚石', content: '<p>此景觀演繹了中國「鯉魚躍龍門」的古老傳說。瀑布下傾斜的石頭是「鯉魚石」，彷彿正奮力逆流而上。</p>' },
+                { title: '銀河泉與嚴下水', content: '<p>銀河泉傳說是足利義滿用來泡茶的泉水，嚴下水則是他洗手的水源。為宏偉庭園增添了人性的溫度。</p>' },
+                { title: '夕佳亭', content: '<p>一座茅草屋頂的茶室，其名意為「夕陽下的景色絕佳」。它體現了與金閣的華麗形成強烈對比的「侘寂」美學。</p>' }
+            ]
+        },
+        nishiki: {
+            tabs: [
+                { id: 'nishiki-tab1', name: '鹹食類前鋒', color: '#c2410c' },
+                { id: 'nishiki-tab2', name: '海之恩惠', color: '#0f766e' },
+                { id: 'nishiki-tab3', name: '甜蜜的中場休息', color: '#a16207' }
+            ],
+            tasks: {
+                'nishiki-tab1': [
+                    { title: '高湯玉子燒', shop: '三木鶏卵', guide: '口感濕潤、熱氣騰騰，每一口都滿溢著高雅的湯汁。', completed: false },
+                    { title: '章魚蛋', shop: '櫂 KAI', guide: '小章魚的頭裡塞滿鵪鶉蛋，視覺與味覺的雙重驚喜。', completed: false },
+                    { title: '現烤仙貝', shop: '寺子屋本舗', guide: '務必嘗試溫熱的「ぬれおかき」（濕仙貝），口感介於麻糬與仙貝之間。', completed: false }
+                ],
+                'nishiki-tab2': [
+                    { title: '生魚片/烤海鮮串', shop: '鮮魚木村', guide: '用市場價格品嚐料亭等級的奢華，魚肉在舌尖化開。', completed: false },
+                    { title: '鰻魚肝串', shop: '川魚 のとよ', guide: '成熟、略帶甘醇的苦味，被百年醬汁的醇厚甜美所平衡，是「大人感」的風味。', completed: false }
+                ],
+                'nishiki-tab3': [
+                    { title: '豆乳甜甜圈 & 冰淇淋', shop: 'こんなもんじゃ', guide: '外殼酥脆，內部蓬鬆柔軟。務必追加濃郁的豆乳冰淇淋一同享用。', completed: false },
+                    { title: '鮮榨果汁', shop: '市場中各蔬果攤', guide: '絕佳的味覺轉換器！純粹、清新的酸甜能洗去口中殘留的鹹味與油膩感。', completed: false }
+                ]
+            }
+        },
+        shotengai: {
+            tabs: [
+                { target: 'shotengai-overview', name: '路線總覽', color: '#6b7280' },
+                { target: 'shotengai-shinkyogoku', name: '青春巡禮篇', color: '#db2777' },
+                { target: 'shotengai-teramachi', name: '文化尋寶篇', color: '#0d9488' }
+            ],
+            shinkyogoku: [
+                { icon: '🎀', title: '角色天堂：三麗鷗專賣店', desc: '尋找 Hello Kitty 與她的朋友們，別忘了找找京都限定的和風設計款。' },
+                { icon: '🤖', title: '扭蛋牆：#C-pla', desc: '準備好零錢！這裡有超過800台扭蛋機，體驗日本獨特的扭蛋宇宙！' },
+                { icon: '📸', title: '大頭貼機：GiGO遊戲中心', desc: '母女一起體驗的絕佳活動！製作一份充滿日本「卡哇伊」特色的美顏紀念照。' },
+                { icon: '💄', title: '流行服飾與藥妝', desc: '林立著價格親民的服飾店與大型藥妝店，是發掘日系穿搭與補貨的好地方。' }
+            ],
+            teramachi: [
+                { icon: '📜', title: '百年老舖：鳩居堂', desc: '創立超過360年，店內混合著白檀、沉香的優雅氣味，販售頂級線香與絕美和紙。' },
+                { icon: '🖼️', title: '文青與藝術家：大書堂', desc: '專營古書與版畫的古書店，特別是江戶時代至今的浮世繪，像一座微型美術館。' },
+                { icon: '🔪', title: '職人手作的溫度', desc: '販售專業廚刀的「有次」，或製作佛珠的專門店，承載京都的匠人精神。' },
+                { icon: '🍵', title: '茶香與古美術', desc: '散佈著畫廊、古美術店與茶葉店。即使不買，放慢腳步欣賞櫥窗也是一種享受。' }
+            ]
+        },
+        kawaramachi: {
+            shopping: [
+                { id: 'takashimaya', title: '京都高島屋 S.C.', subtitle: 'The Classic & Modern Hybrid', desc: '品味與信賴的殿堂，融合經典精品與現代潮流元素，是兼顧各年齡層需求的一站式解決方案。', content: `<h4>核心定位：經典殿堂與現代活力的融合</h4><p>京都高島屋是這座城市的殿堂級百貨。2023年開幕的全新專門店區域「T8」，為這座經典殿堂注入了令人驚喜的現代活力，引進如<strong>「Nintendo KYOTO」</strong>、人氣書店<strong>「蔦屋書店」</strong>等話題名店。</p><h4>特別推薦：DEPACHIKA 地下美食街</h4><p>無論是否在此用餐，都絕對要去地下一樓的食品賣場「DEPACHIKA」巡禮。推薦老舖「とらや」的羊羹與「MALEBRANCHE」的抹茶餅乾「茶の菓」。</p>` },
+                { id: 'fujii-daimaru', title: '藤井大丸', subtitle: 'The Fashion-Forward', desc: '獻給時尚愛好者的聖地，集合國內外前衛與潮流品牌，是年輕人的理想主場。', content: `<h4>核心定位：時尚前沿策展地</h4><p>如果說高島屋是經典的聖殿，那麼藤井大丸無疑是獻給時尚信徒的聖地。它像一座垂直堆疊的時尚精品選物大樓，精準地抓住了當下年輕人的時尚脈搏。</p><h4>品牌陣容亮點</h4><p>SNIDEL, FRAY I.D, MAISON KITSUNÉ, COMME des GARÇONS 等。</p>` },
+                { id: 'bal', title: '京都BAL', subtitle: 'The Curated Luxury', desc: '美術館般的靜謐購物空間，精心挑選的品牌組合，適合追求極致品味與放鬆氛圍的家庭。', content: `<h4>核心定位：精心策展的奢華體驗</h4><p>京都BAL提供的是一種「作為休閒的購物」體驗。它顛覆了擁擠喧鬧的百貨印象，以寬敞、靜謐、宛如美術館般的空間設計，將品味提升至全新境界。</p><h4>核心租戶與特色</h4><p>大型書店 MARUZEN、生活風格品牌 Ron Herman、世界級香氛美妝 Diptyque 等。</p>` }
+            ],
+            dining: [
+                { id: 'dining-elegance', title: '百貨高層的優雅', subtitle: 'ELEGANCE & CONVENIENCE', desc: '在購物後無縫接軌，享受舒適環境與品質穩定的體面晚餐。', content: `<h4>地點</h4><p>京都高島屋S.C. 7樓「京回廊」餐廳街。</p><h4>優點</h4><p>環境舒適、品質穩定、選擇多樣。</p><h4>缺點</h4><p>價格偏高、較早結束營業。</p><h4>推薦店家</h4><p>とんかつ和幸 (炸豬排), グリルキャピタル 東洋亭 (百年漢堡排)。</p>` },
+                { id: 'dining-atmosphere', title: '先斗町の風情', subtitle: 'ATMOSPHERE & ADVENTURE', desc: '沉浸在絕佳的京都夜晚氛圍中，體驗充滿探索樂趣的一餐。', content: `<h4>地點</h4><p>鴨川旁充滿江戶風情的石板小巷「先斗町」。</p><h4>優點</h4><p>絕佳的京都夜晚氛圍、充滿探索樂趣。</p><h4>缺點</h4><p>價格不一，部分店家對遊客有門檻。</p><h4>教戰守則</h4><p>優先選擇門口有放置附<b>照片與價格菜單</b>的店家。</p>` },
+                { id: 'dining-casual', title: '周邊巷弄的日常', subtitle: 'CASUAL & AUTHENTIC', desc: '逛街累了？來一頓快速、美味、高CP值且無負擔的道地晚餐。', content: `<h4>地點</h4><p>百貨周邊的小巷或連鎖餐廳。</p><h4>優點</h4><p>性價比高、快速、能品嚐到本地人喜愛的味道。</p><h4>缺點</h4><p>用餐環境可能較為簡單。</p><h4>推薦店家</h4><p>麺屋 猪一 (米其林推薦拉麵), やよい軒 (日式定食)。</p>` }
+            ]
+        },
+        mapLocations: [
+            { lat: 35.03939, lng: 135.72924, name: '金閣寺 (鹿苑寺)', desc: '金碧輝煌的舍利殿，是京都的象徵之一。' },
+            { lat: 35.0049, lng: 135.7680, name: '錦市場', desc: '被譽為「京都的廚房」，美食雲集。' },
+            { lat: 35.0068, lng: 135.7685, name: '新京極・寺町京極商店街', desc: '兩條平行但風格迥異的商店街。' },
+            { lat: 35.0038, lng: 135.7695, name: '四条河原町十字路口', desc: '京都最繁華的購物與交通中心。' }
+        ]
+    };
+
+    // --- 通用函數 ---
+    const modalContainer = document.getElementById('modal-container');
+    const modalTitle = document.getElementById('modal-title');
+    const modalBody = document.getElementById('modal-body');
+    const modalClose = document.getElementById('modal-close');
+
+    function showModal(title, content) {
+        modalTitle.textContent = title;
+        modalBody.innerHTML = content;
+        modalContainer.classList.add('visible');
+    }
+    function hideModal() {
+        modalContainer.classList.remove('visible');
+    }
+    modalClose.addEventListener('click', hideModal);
+    modalContainer.addEventListener('click', (e) => {
+        if (e.target === modalContainer) hideModal();
+    });
+
+    // --- 手機版選單 ---
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    mobileMenuButton.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
+
+    // --- 導覽列滾動效果 ---
+    const header = document.getElementById('main-header');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 50) {
+            header.classList.add('navbar-scrolled');
+        } else {
+            header.classList.remove('navbar-scrolled');
+        }
+    });
+
+    // --- 金閣寺區塊初始化 ---
+    function initKinkakuji() {
+        const diagramContainer = document.getElementById('kinkaku-diagram');
+        const layerInfoContainer = document.getElementById('kinkaku-layer-info');
+        
+        // 創建舍利殿圖示
+        Object.keys(AppData.kinkakuji.layers).sort().reverse().forEach(layerId => {
+            const layerData = AppData.kinkakuji.layers[layerId];
+            const layerDiv = document.createElement('div');
+            layerDiv.className = 'kinkaku-layer text-center p-4 border-b-2 border-dashed border-amber-800/20 cursor-pointer transition-all duration-300 hover:bg-amber-50';
+            layerDiv.dataset.layer = layerId;
+            layerDiv.innerHTML = `
+                <span class="text-sm font-bold text-amber-900">第${{'1':'一','2':'二','3':'三'}[layerId]}層</span>
+                <h4 class="text-xl font-serif">${layerData.title.split('：')[0]}</h4>
+            `;
+            diagramContainer.appendChild(layerDiv);
+        });
+
+        const kinkakuLayers = diagramContainer.querySelectorAll('.kinkaku-layer');
+
+        function updateLayerInfo(layerId) {
+            const data = AppData.kinkakuji.layers[layerId];
+            layerInfoContainer.innerHTML = `
+                <h4 class="text-xl font-bold text-slate-800 mb-4">${data.title}</h4>
+                <div class="prose prose-sm max-w-none prose-p:text-slate-700">${data.content}</div>`;
+            kinkakuLayers.forEach(layer => {
+                layer.classList.toggle('bg-amber-100', layer.dataset.layer === layerId);
+                layer.classList.toggle('border-l-4', layer.dataset.layer === layerId);
+                layer.classList.toggle('border-amber-500', layer.dataset.layer === layerId);
+            });
+        }
+
+        kinkakuLayers.forEach(layer => {
+            layer.addEventListener('click', () => updateLayerInfo(layer.dataset.layer));
+        });
+
+        updateLayerInfo('1'); // 預設顯示第一層
+    }
+
+    // --- 錦市場區塊初始化 ---
+    function initNishiki() {
+        const tabsContainer = document.getElementById('nishiki-tabs');
+        const tabContentsContainer = document.getElementById('nishiki-tab-contents');
+
+        AppData.nishiki.tabs.forEach((tabData, index) => {
+            const button = document.createElement('button');
+            button.dataset.tab = tabData.id;
+            button.className = `interactive-tab-button text-sm md:text-base font-semibold py-2 px-4 rounded-full border-2 transition`;
+            button.textContent = tabData.name;
+            if (index === 0) {
+                button.classList.add('active');
+                button.style.borderColor = tabData.color;
+                button.style.color = tabData.color;
+                button.style.backgroundColor = `${tabData.color}1a`;
+            } else {
+                button.style.borderColor = 'transparent';
+            }
+            tabsContainer.appendChild(button);
+
+            const contentDiv = document.createElement('div');
+            contentDiv.id = tabData.id;
+            contentDiv.className = 'interactive-tab-content space-y-4';
+            if (index === 0) contentDiv.classList.add('active');
+            
+            AppData.nishiki.tasks[tabData.id].forEach(item => {
+                contentDiv.appendChild(createTaskCard(item));
+            });
+            tabContentsContainer.appendChild(contentDiv);
+        });
+
+        const tabs = tabsContainer.querySelectorAll('.interactive-tab-button');
+        const tabContents = tabContentsContainer.querySelectorAll('.interactive-tab-content');
+
+        tabs.forEach((tab, index) => {
+            tab.addEventListener('click', () => {
+                const tabData = AppData.nishiki.tabs[index];
+                tabs.forEach((t, i) => {
+                    t.classList.remove('active');
+                    t.style.borderColor = 'transparent';
+                    t.style.color = '';
+                    t.style.backgroundColor = '';
+                });
+                tabContents.forEach(c => c.classList.remove('active'));
+
+                tab.classList.add('active');
+                tab.style.borderColor = tabData.color;
+                tab.style.color = tabData.color;
+                tab.style.backgroundColor = `${tabData.color}1a`;
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        function createTaskCard(item) {
+            const card = document.createElement('div');
+            card.className = 'nishiki-task-card bg-white p-4 rounded-lg shadow-sm cursor-pointer transition border border-gray-200 hover:border-gray-400';
+            card.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input type="checkbox" class="task-checkbox h-6 w-6 text-orange-600 rounded-md border-gray-300 mr-4 focus:ring-orange-500">
+                        <div class="flex-grow">
+                            <h4 class="task-title text-lg font-semibold text-stone-800">${item.title}</h4>
+                            <p class="text-sm text-stone-500">${item.shop}</p>
+                        </div>
+                    </div>
+                    <span class="expand-arrow text-2xl text-stone-400 transform transition-transform">▼</span>
+                </div>
+                <div class="details-content mt-4 border-t pt-4 text-stone-600">
+                    <p>${item.guide}</p>
+                </div>`;
+            
+            const checkbox = card.querySelector('.task-checkbox');
+            checkbox.addEventListener('click', (e) => {
+                e.stopPropagation();
+                card.classList.toggle('completed');
+            });
+
+            card.addEventListener('click', () => {
+                const details = card.querySelector('.details-content');
+                const arrow = card.querySelector('.expand-arrow');
+                details.classList.toggle('open');
+                arrow.style.transform = details.classList.contains('open') ? 'rotate(180deg)' : 'none';
+            });
+            return card;
+        }
+    }
+
+    // --- 商店街區塊初始化 ---
+    function initShotengai() {
+        const navContainer = document.querySelector('#shotengai .max-w-5xl');
+        const contentContainer = document.getElementById('shotengai-contents');
+
+        AppData.shotengai.tabs.forEach((tabData, index) => {
+            const button = document.createElement('button');
+            button.dataset.target = tabData.target;
+            button.dataset.color = tabData.color;
+            button.className = 'interactive-tab-button py-3 px-2 sm:px-4';
+            button.textContent = tabData.name;
+            if (index === 0) {
+                button.classList.add('active');
+                button.style.borderBottom = `3px solid ${tabData.color}`;
+            }
+            navContainer.appendChild(button);
+        });
+
+        // 總覽內容
+        const overviewContent = `
+            <div id="shotengai-overview" class="interactive-tab-content active">
+                <div class="text-center mb-12">
+                    <h3 class="text-2xl font-bold mb-4">一條馬路，兩個世界</h3>
+                    <p class="max-w-3xl mx-auto text-stone-600 leading-relaxed">這裡有兩條平行的商店街，卻展現出截然不同的風貌。點擊上方頁籤，切換不同主題的探索之旅吧！</p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="bg-slate-50 p-6 rounded-xl"><h4 class="text-xl font-semibold text-center mb-4">商店街風格對比</h4><div class="chart-container" style="height: 250px;"><canvas id="shotengai-styleChart"></canvas></div></div>
+                    <div class="bg-slate-50 p-6 rounded-xl"><h4 class="text-xl font-semibold text-center mb-4">三小時攻略時間軸</h4><div class="chart-container" style="height: 250px;"><canvas id="shotengai-timelineChart"></canvas></div></div>
+                </div>
+            </div>`;
+        contentContainer.innerHTML += overviewContent;
+
+        // 新京極內容
+        const shinkyogokuContent = `
+            <div id="shotengai-shinkyogoku" class="interactive-tab-content">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl font-bold text-fuchsia-600">新京極：獻給18歲的青春巡禮</h3>
+                    <p class="mt-4 text-stone-600">一同感受京都最活潑、最新潮的一面。</p>
+                </div>
+                <div id="shinkyogoku-cards" class="grid md:grid-cols-2 gap-6">
+                    ${AppData.shotengai.shinkyogoku.map(item => `
+                        <div class="content-card shinkyogoku-card p-6">
+                            <h4 class="text-xl font-bold mb-2"><span class="mr-2">${item.icon}</span>${item.title}</h4>
+                            <p class="text-stone-600">${item.desc}</p>
+                        </div>`).join('')}
+                </div>
+            </div>`;
+        contentContainer.innerHTML += shinkyogokuContent;
+
+        // 寺町京極內容
+        const teramachiContent = `
+            <div id="shotengai-teramachi" class="interactive-tab-content">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl font-bold text-teal-700">寺町京極：獻給父母的文化尋寶</h3>
+                    <p class="mt-4 text-stone-600">發掘歷史與工藝的深度。</p>
+                </div>
+                <div id="teramachi-cards" class="grid md:grid-cols-2 gap-6">
+                    ${AppData.shotengai.teramachi.map(item => `
+                        <div class="content-card teramachi-card p-6">
+                            <h4 class="text-xl font-bold mb-2"><span class="mr-2">${item.icon}</span>${item.title}</h4>
+                            <p class="text-stone-600">${item.desc}</p>
+                        </div>`).join('')}
+                </div>
+            </div>`;
+        contentContainer.innerHTML += teramachiContent;
+
+        const navButtons = navContainer.querySelectorAll('.interactive-tab-button');
+        const contentSections = contentContainer.querySelectorAll('.interactive-tab-content');
+
+        navButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const targetId = button.dataset.target;
+                const color = button.dataset.color || '#6b7280';
+                
+                navButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                    btn.style.borderBottom = '3px solid transparent';
+                });
+                contentSections.forEach(section => section.classList.remove('active'));
+
+                button.classList.add('active');
+                button.style.borderBottom = `3px solid ${color}`;
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
+        
+        // Chart.js for Shotengai
+        new Chart(document.getElementById('shotengai-styleChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['現代感', '傳統感', '熱鬧度', '寧靜度'],
+                datasets: [
+                    { label: '新京極', data: [9, 2, 9, 3], backgroundColor: 'rgba(219, 39, 119, 0.6)', borderColor: 'rgba(219, 39, 119, 1)', borderWidth: 1 },
+                    { label: '寺町京極', data: [4, 9, 5, 8], backgroundColor: 'rgba(13, 148, 136, 0.6)', borderColor: 'rgba(13, 148, 136, 1)', borderWidth: 1 }
+                ]
+            },
+            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { max: 10, grid: { color: '#e5e7eb' } }, y: { grid: { color: '#e5e7eb' } } }, plugins: { legend: { position: 'bottom' } } }
+        });
+
+        new Chart(document.getElementById('shotengai-timelineChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['活動'],
+                datasets: [
+                    { label: '青春巡禮 (新京極)', data: [[14, 15.5]], backgroundColor: 'rgba(219, 39, 119, 0.7)' },
+                    { label: '文化尋寶 (寺町京極)', data: [[15.5, 17]], backgroundColor: 'rgba(13, 148, 136, 0.7)' }
+                ]
+            },
+            options: {
+                indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                scales: {
+                    x: { min: 14, max: 17, ticks: { stepSize: 1, callback: v => `${v}:00` }, grid: { color: '#e5e7eb' } },
+                    y: { grid: { display: false } }
+                },
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+
+    // --- 四条河原町區塊初始化 ---
+    function initKawaramachi() {
+        // 購物區塊
+        const shoppingSection = document.getElementById('shopping-section');
+        shoppingSection.innerHTML = `
+            <div class="text-center mb-8">
+                <h3 class="text-2xl font-bold text-teal-800">第一幕：購物矩陣</h3>
+                <p class="mt-2 text-stone-600 max-w-3xl mx-auto">點擊下方圖表或卡片，快速定位最適合您們的商城。</p>
+            </div>
+            <div class="chart-container relative w-full max-w-xl mx-auto h-80 md:h-96 mb-12">
+                <canvas id="shopping-chart"></canvas>
+            </div>
+            <div id="shopping-cards-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                ${AppData.kawaramachi.shopping.map(item => `
+                    <div class="cursor-pointer content-card p-6" onclick="showModal('${item.title}', \`${item.content}\`)">
+                        <h4 class="font-bold text-xl text-teal-900">${item.title}</h4>
+                        <p class="text-sm font-medium text-amber-700 mt-1">${item.subtitle}</p>
+                        <p class="mt-4 text-stone-600">${item.desc}</p>
+                    </div>`).join('')}
+            </div>`;
+
+        // 晚餐區塊
+        const diningSection = document.getElementById('dining-section');
+        diningSection.innerHTML = `
+            <div class="text-center mb-8">
+                <h3 class="text-2xl font-bold text-teal-800">第二幕：晚餐決策樹</h3>
+                <p class="mt-2 text-stone-600 max-w-3xl mx-auto">跟隨下方的決策流程，或直接點擊卡片，快速選擇最完美的晚餐路徑。</p>
+            </div>
+            <div class="mb-12 p-6 bg-slate-50 rounded-xl">
+                <div class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-4 text-center">
+                    <div class="font-bold text-lg">晚餐想追求？</div>
+                    <div class="text-stone-400 text-2xl hidden md:block">→</div>
+                    <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                         <div class="border-2 border-teal-600 border-dashed rounded-lg p-3">
+                            <span class="font-semibold">優雅便利</span>
+                            <div class="text-stone-400 text-2xl my-1">↓</div>
+                            <span class="bg-teal-100 text-teal-800 py-1 px-3 rounded-full">百貨高層</span>
+                        </div>
+                        <div class="border-2 border-amber-600 border-dashed rounded-lg p-3">
+                            <span class="font-semibold">氛圍冒險</span>
+                            <div class="text-stone-400 text-2xl my-1">↓</div>
+                            <span class="bg-amber-100 text-amber-800 py-1 px-3 rounded-full">先斗町</span>
+                        </div>
+                        <div class="border-2 border-stone-500 border-dashed rounded-lg p-3">
+                            <span class="font-semibold">快速地道</span>
+                            <div class="text-stone-400 text-2xl my-1">↓</div>
+                            <span class="bg-stone-200 text-stone-800 py-1 px-3 rounded-full">周邊日常</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="dining-cards-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                ${AppData.kawaramachi.dining.map(item => `
+                    <div class="cursor-pointer content-card p-6" onclick="showModal('${item.title}', \`${item.content}\`)">
+                        <h4 class="font-bold text-xl text-teal-900">${item.title}</h4>
+                        <p class="text-sm font-medium text-teal-700 mt-1">${item.subtitle}</p>
+                        <p class="mt-4 text-stone-600">${item.desc}</p>
+                    </div>`).join('')}
+            </div>`;
+        
+        const shoppingBtn = document.getElementById('show-shopping');
+        const diningBtn = document.getElementById('show-dining');
+        function switchView(view) {
+            shoppingSection.classList.toggle('hidden', view !== 'shopping');
+            diningSection.classList.toggle('hidden', view === 'shopping');
+            shoppingBtn.classList.toggle('kawaramachi-tab-active', view === 'shopping');
+            shoppingBtn.classList.toggle('kawaramachi-tab-inactive', view !== 'shopping');
+            diningBtn.classList.toggle('kawaramachi-tab-active', view !== 'shopping');
+            diningBtn.classList.toggle('kawaramachi-tab-inactive', view === 'shopping');
+        }
+        shoppingBtn.addEventListener('click', () => switchView('shopping'));
+        diningBtn.addEventListener('click', () => switchView('dining'));
+
+        // Chart.js for Kawaramachi
+        new Chart(document.getElementById('shopping-chart').getContext('2d'), {
+            type: 'radar',
+            data: {
+                labels: ['經典奢華', '年輕潮流', '設計品味', '家庭同樂'],
+                datasets: [
+                    { label: '京都高島屋 S.C.', data: [9, 7, 7, 9], backgroundColor: 'rgba(15, 118, 110, 0.3)', borderColor: 'rgba(15, 118, 110, 1)', pointBackgroundColor: 'rgba(15, 118, 110, 1)' },
+                    { label: '藤井大丸', data: [3, 9, 8, 4], backgroundColor: 'rgba(217, 119, 6, 0.3)', borderColor: 'rgba(217, 119, 6, 1)', pointBackgroundColor: 'rgba(217, 119, 6, 1)' },
+                    { label: '京都BAL', data: [7, 6, 9, 7], backgroundColor: 'rgba(113, 113, 122, 0.3)', borderColor: 'rgba(113, 113, 122, 1)', pointBackgroundColor: 'rgba(113, 113, 122, 1)' }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                scales: { r: { angleLines: { color: '#e5e7eb' }, grid: { color: '#e5e7eb' }, pointLabels: { font: { size: 14 } }, ticks: { backdropColor: '#f8f9fa', stepSize: 2 }, min: 0, max: 10 } },
+                plugins: { legend: { position: 'bottom', labels: { usePointStyle: true } } }
+            }
+        });
+    }
+
+    // --- 地圖初始化 ---
+    function initMap() {
+        const map = L.map('map').setView([35.0116, 135.7681], 13); // 京都中心
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        const goldIcon = new L.Icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+        });
+
+        AppData.mapLocations.forEach(loc => {
+            L.marker([loc.lat, loc.lng], {icon: goldIcon}).addTo(map)
+                .bindPopup(`<b>${loc.name}</b><br>${loc.desc}`);
+        });
+    }
+
+    // --- 頁面滾動監測，更新導覽列狀態 ---
+    const sections = document.querySelectorAll('.section');
+    const navLinks = document.querySelectorAll('.nav-link');
+    window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            if (pageYOffset >= sectionTop - 100) {
+                current = section.getAttribute('id');
+            }
+        });
+
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href').substring(1) === current) {
+                link.classList.add('active');
+            }
+        });
+    });
+
+    // --- 初始化所有區塊 ---
+    initKinkakuji();
+    initNishiki();
+    initShotengai();
+    initKawaramachi();
+    initMap();
+});
+
+// 將 showModal 函數暴露到全域，以便 onclick 屬性可以訪問
+window.showModal = (title, content) => {
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-body').innerHTML = content;
+    document.getElementById('modal-container').classList.add('visible');
+};
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第四日：東山神域與古道散策 | 京都行程互動指南</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700&family=Noto+Sans+TC:wght@300;400;700&display=swap');
+
+        :root {
+            --primary-color: #B93C3C; /* A deeper, elegant Torii Red */
+            --secondary-color: #2A4B43; /* A calming, deep temple green */
+            --text-color: #333333;
+            --bg-color: #F8F5F0; /* A warmer, parchment-like background */
+            --light-gray: #DCDCDC;
+            --card-bg: #FFFFFF;
+            --warning-bg: #FFFBEB;
+            --warning-border: #FBBF24;
+            --respect-bg: #FFF1F2;
+            --respect-border: #F43F5E;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', 'Noto Sans JP', sans-serif;
+            line-height: 1.8;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0 15px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 25px;
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.07);
+            border: 1px solid #eee;
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 20px;
+            margin-bottom: 35px;
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 2.6rem;
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 1.15rem;
+            color: #555;
+            margin-top: 8px;
+        }
+
+        .timeline-item {
+            margin-bottom: 25px;
+        }
+
+        details {
+            border: 1px solid var(--light-gray);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease-in-out;
+        }
+        
+        details[open] {
+            border-color: var(--secondary-color);
+            box-shadow: 0 4px 15px rgba(42, 75, 67, 0.1);
+        }
+
+        summary {
+            display: flex;
+            align-items: center;
+            padding: 18px 22px;
+            background-color: #fff;
+            cursor: pointer;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+            list-style: none;
+        }
+        
+        summary::-webkit-details-marker { display: none; }
+
+        summary::after {
+            content: '\f078'; /* Font Awesome down arrow */
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            margin-left: auto;
+            transition: transform 0.3s ease;
+            font-size: 1rem;
+        }
+        
+        details[open] summary::after {
+            transform: rotate(180deg);
+        }
+
+        summary i {
+            margin-right: 18px;
+            width: 35px;
+            text-align: center;
+            color: var(--primary-color);
+        }
+
+        .content {
+            padding: 5px 25px 25px;
+            border-top: 1px solid var(--light-gray);
+            background: #fafafa;
+        }
+        
+        .content h4 {
+            color: var(--secondary-color);
+            border-left: 4px solid var(--secondary-color);
+            padding-left: 12px;
+            margin-top: 25px;
+            font-size: 1.2rem;
+        }
+
+        .checklist {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .checklist li {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .checklist input[type="checkbox"] {
+            margin-right: 15px;
+            margin-top: 7px;
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            accent-color: var(--secondary-color);
+        }
+        
+        .checklist label {
+            font-weight: 700;
+            color: #444;
+        }
+        
+        .checklist label small {
+            display: block;
+            font-weight: 400;
+            color: #666;
+            margin-top: 4px;
+            line-height: 1.6;
+        }
+
+        .transport-tabs {
+            display: flex;
+            border-bottom: 2px solid var(--light-gray);
+            margin-bottom: 18px;
+        }
+
+        .tab-button {
+            padding: 12px 24px;
+            cursor: pointer;
+            border: none;
+            background-color: transparent;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #888;
+            border-bottom: 4px solid transparent;
+            transition: all 0.3s ease;
+            margin-bottom: -2px;
+        }
+
+        .tab-button.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+        
+        .highlight {
+            background-color: var(--warning-bg);
+            border-left: 5px solid var(--warning-border);
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .highlight strong {
+            color: #92400E;
+        }
+
+        .respect-box {
+            background-color: var(--respect-bg);
+            border: 1px solid var(--respect-border);
+            border-left-width: 5px;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+        .respect-box h4 {
+            color: var(--respect-border);
+            margin-top: 0;
+            border-left: none;
+            padding-left: 0;
+            font-size: 1.25rem;
+        }
+        .respect-box ul {
+            padding-left: 20px;
+            margin-bottom: 0;
+        }
+        
+        .recommendation-card {
+            display: flex;
+            gap: 18px;
+            background: #fdfdfd;
+            border: 1px solid #eee;
+            padding: 18px;
+            border-radius: 10px;
+            margin-top: 18px;
+            transition: box-shadow 0.3s ease;
+        }
+        .recommendation-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+        .recommendation-card i {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            padding-top: 5px;
+        }
+        .recommendation-card-content h4 {
+            margin: 0 0 5px 0;
+            color: var(--text-color);
+            border-left: none;
+            padding-left: 0;
+            font-size: 1.1rem;
+        }
+        .recommendation-card-content p {
+            margin: 0;
+            font-size: 0.95rem;
+            color: #555;
+        }
+
+        .map-container {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .map-container h3 {
+            color: var(--secondary-color);
+            font-size: 1.8rem;
+        }
+        
+        .map-container p {
+            font-size: 1rem;
+            color: #666;
+            margin-top: -10px;
+            margin-bottom: 20px;
+        }
+
+        #osm-map {
+            width: 100%;
+            height: 500px;
+            border: 1px solid var(--light-gray);
+            border-radius: 12px;
+        }
+        
+        @media (max-width: 600px) {
+            body { padding: 0; }
+            .container {
+                margin: 0;
+                padding: 20px;
+                border-radius: 0;
+                box-shadow: none;
+                border: none;
+            }
+            header h1 { font-size: 2.2rem; }
+            summary { font-size: 1.3rem; padding: 15px 18px; }
+            .tab-button { padding: 10px 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>第四日：東山神域與古道散策</h1>
+            <p>2025/07/12 (週六) | JR與京阪電車的完美串連</p>
+        </header>
+
+        <main>
+            <!-- Morning Section -->
+            <div class="timeline-item">
+                <details>
+                    <summary><i class="fa-solid fa-torii-gate"></i>上午 (08:30 - 11:00) | 伏見稻荷大社</summary>
+                    <div class="content">
+                        <h4><i class="fa-solid fa-bullseye"></i> 戰略心態與準備</h4>
+                        <p>這不僅是觀光，而是一場深入神域的「お山めぐり」(環山參拜)。我們的目標是在2.5小時內完成精華巡禮，體驗從喧囂到靜謐的完整過渡。</p>
+                        <div class="highlight">
+                            <strong><i class="fa-solid fa-person-circle-check"></i> 戰前檢查清單：</strong>
+                            <ul>
+                                <li><strong>鞋履：</strong>務必穿著舒適好走的健行鞋或運動鞋。石階眾多，請務必注意。</li>
+                                <li><strong>飲水：</strong>建議自備一瓶水，山上雖有販賣機但價格較高且選擇有限。</li>
+                                <li><strong>時機：</strong>務必於<strong>上午8點前</strong>抵達，這是避開人潮、享受清新空氣與柔和光線的黃金時段。</li>
+                            </ul>
+                        </div>
+                        
+                        <h4><i class="fa-solid fa-person-hiking"></i> 精華遊覽路線</h4>
+                        <ul class="checklist">
+                            <li>
+                                <input type="checkbox" id="item1" checked>
+                                <label for="item1">本殿 & 千本鳥居
+                                    <small>抵達後先於「手水舍」淨身，再到主殿參拜。接著進入由無數朱紅色鳥居構成的夢幻隧道。此區人潮最多，保持穩定步伐前進即可。</small>
+                                </label>
+                            </li>
+                            <li>
+                                <input type="checkbox" id="item2">
+                                <label for="item2">奧社奉拜所 & おもかる石 (輕重石)
+                                    <small>穿過千本鳥居後抵達。在此可嘗試有趣的「輕重石」占卜：許願後舉起石燈籠頂的圓石，若比預期輕則願望易實現。<strong>專業提示：若排隊人多，建議果斷放棄以節省時間攻頂。</strong></small>
+                                </label>
+                            </li>
+                            <li>
+                                <input type="checkbox" id="item3">
+                                <label for="item3">四つ辻 (Yotsutsuji) 觀景台
+                                    <small>從奧社奉拜所持續攀登約20-30分鐘，即可抵達視野開闊的四辻路口。這裡的京都市景比山頂更壯觀，是本次行程的主要休息點與折返點。在此拍照、補水後即可循原路下山。</small>
+                                </label>
+                            </li>
+                        </ul>
+                    </div>
+                </details>
+            </div>
+
+            <!-- Transport Section -->
+            <div class="timeline-item">
+                <details>
+                    <summary><i class="fa-solid fa-route"></i>上午 (11:00 - 12:00) | 交通轉移</summary>
+                    <div class="content">
+                        <h4><i class="fa-solid fa-map-pin"></i> 鎖定正確車站 (極度重要)</h4>
+                        <div class="highlight">
+                            <p><strong><i class="fa-solid fa-triangle-exclamation"></i> 陷阱注意：</strong>從伏見稻荷正門出來，正對面是 <strong>JR 稲荷駅</strong>，請<strong>華麗地轉身忽略它</strong>！</p>
+                            <p><strong><i class="fa-solid fa-person-walking"></i> 正確路線：</strong>請<strong>背對JR車站</strong>，沿參道商店街<strong>直走約5分鐘</strong>，左手邊會看到外觀較現代、有狐狸圖案的<strong>「京阪電車 伏見稲荷駅」</strong>，這才是我們的目標！</p>
+                        </div>
+                        <p>搭乘京阪本線往「出町柳」方向的<strong>準急</strong>或<strong>普通</strong>列車，在第四站<strong>「清水五条駅」</strong>下車 (車程約7-10分鐘，票價更新為 <strong>¥230</strong>)。</p>
+                        
+                        <h4><i class="fa-solid fa-shoe-prints"></i> 從清水五条站前往清水寺</h4>
+                        <p>接下來是一段約20-25分鐘的上坡路，這本身就是朝聖體驗的一部分，沿途的「茶わん坂」(茶碗坂) 有許多精美的陶瓷店。</p>
+                        <div class="transport-tabs">
+                            <button class="tab-button active" onclick="showTab(event, 'walk')"><i class="fa-solid fa-person-walking"></i> 步行上山</button>
+                            <button class="tab-button" onclick="showTab(event, 'taxi')"><i class="fa-solid fa-taxi"></i> 計程車備案</button>
+                        </div>
+                        <div id="walk" class="tab-content active">
+                            <p><strong>優點：</strong>感受從現代街景轉變為古都風情的完整過程。<br><strong>缺點：</strong>全程上坡，較消耗體力。</p>
+                            <ol>
+                                <li>從清水五条站<strong>4號出口</strong>出站。</li>
+                                <li>沿寬闊的「五条通」朝東（山的方向）前進。</li>
+                                <li>在「東大路通」路口過馬路，開始沿「五条坂」上行即可抵達。</li>
+                            </ol>
+                        </div>
+                        <div id="taxi" class="tab-content">
+                             <p><strong>啟動時機：</strong>若在伏見稻荷已耗盡體力，或遇惡劣天氣，可果斷啟動此備案。</p>
+                            <p><strong>優點：</strong>最快速、最舒適，將徒步距離縮至最短。<br><strong>缺點：</strong>費用較高 (預估約 ¥1,500 - ¥2,000)。</p>
+                            <ol>
+                                <li>在伏見稻荷神社外的大路上攔截空車。</li>
+                                <li>直接請司機載至五条坂或清水寺停車場附近。</li>
+                            </ol>
+                        </div>
+                    </div>
+                </details>
+            </div>
+
+            <!-- Afternoon Section -->
+            <div class="timeline-item">
+                <details open>
+                    <summary><i class="fa-solid fa-store"></i>下午 (12:00 - 17:00) | 東山漫步史詩</summary>
+                    <div class="content">
+                        <h4><i class="fa-solid fa-utensils"></i> 山門前的午餐 (12:00-13:00)</h4>
+                        <p>在挑戰清水寺前，先在山腳的清水坂或五条坂用餐補充能量。推薦品嚐京都特色的「湯豆腐」(如：順正おかべ家) 或熱騰騰的「蕎麥麵」。</p>
+
+                        <h4><i class="fa-solid fa-landmark"></i> 經典散策路線 (13:00-17:00)</h4>
+                        <ul class="checklist">
+                            <li><input type="checkbox" id="item4"><label for="item4">清水寺<small>參觀由139根木柱支撐、未使用一根釘子的「清水舞台」。在「音羽瀑布」三道泉水中擇一祈願，切記不可貪心！<strong>(最新資訊：地主神社因社殿修復工程，自2022年8月起關閉，預計持續約3年，目前無法進入參拜。)</strong></small></label></li>
+                            <li><input type="checkbox" id="item5"><label for="item5">三年坂 & 二年坂<small>最具古都風情的石板路，兩側店家林立，充滿魅力。<strong>趣味傳說：</strong>在三年坂跌倒會倒楣三年，這只是提醒大家小心走路的玩笑話！</small></label></li>
+                             <li><input type="checkbox" id="item7"><label for="item7">八坂庚申堂 (隱藏亮點)<small>掛滿色彩繽紛「くくり猿」(束縛猿) 的超人氣打卡點。許願時需先捨棄一個慾望，才能讓最重要的願望實現喔！</small></label></li>
+                            <li><input type="checkbox" id="item8"><label for="item8">石塀小路 & 寧寧之道<small>走入幽靜的石板小巷，感受祇園的靜謐之美，這裡是為了紀念豐臣秀吉的妻子「寧寧」而命名的道路。</small></label></li>
+                            <li><input type="checkbox" id="item9"><label for="item9">八坂神社<small>散策的終點，穿過神社西樓門，便正式進入祇園地區。</small></label></li>
+                        </ul>
+
+                        <h4><i class="fa-solid fa-star"></i> 特色店家推薦</h4>
+                        <div class="recommendation-card">
+                           <i class="fa-solid fa-mug-hot"></i>
+                           <div class="recommendation-card-content">
+                               <h4>星巴克 京都二寧坂ヤサカ茶屋店</h4>
+                               <p>全球首間榻榻米星巴克，在超過百年的町家老屋中，體驗咖啡與古都的完美融合。</p>
+                           </div>
+                        </div>
+                        <div class="recommendation-card">
+                           <i class="fa-solid fa-cat"></i>
+                           <div class="recommendation-card-content">
+                               <h4>橡子共和國 二寧坂店</h4>
+                               <p>門口巨大的龍貓是這裡的標誌，走進店內彷彿進入宮崎駿的奇幻森林，是粉絲必訪的打卡聖地。</p>
+                           </div>
+                        </div>
+                    </div>
+                </details>
+            </div>
+
+            <!-- Evening Section -->
+            <div class="timeline-item">
+                <details>
+                    <summary><i class="fa-solid fa-moon"></i>傍晚 (17:00 後) | 祇園薄暮</summary>
+                    <div class="content">
+                        <div class="respect-box">
+                            <h4><i class="fa-solid fa-hand-holding-heart"></i> 祇園鐵則：一份懷有敬意的觀察指南</h4>
+                            <p>祇園是藝舞妓們生活與工作的場所，而非主題樂園。作為有格調的旅人，請務必遵守以下準則，共同守護這份美麗的文化：</p>
+                            <ul>
+                                <li><strong>禁止進入私道：</strong>花見小路兩旁的狹窄巷弄多為私人道路，擅入可能面臨<strong>¥10,000罰款</strong>。請在巷口欣賞即可。</li>
+                                <li><strong>禁止追逐與觸摸：</strong>看見藝舞妓時，請保持安全距離，絕對不可追逐、攔路或觸碰她們的和服。</li>
+                                <li><strong>禁止未經許可的攝影：</strong>嚴禁擅自拍攝藝舞妓，這是侵犯肖像權的失禮行為。請用雙眼與心靈記錄，而非鏡頭。</li>
+                                <li><strong>保持安靜：</strong>請勿大聲喧嘩，將您的存在放輕，靜靜感受木屐敲在石板上的清脆聲響。</li>
+                            </ul>
+                        </div>
+
+                        <h4><i class="fa-solid fa-map-signs"></i> 祇園夜間漫步 (17:30 - 19:00)</h4>
+                        <p>此時段是藝舞妓們趕赴宴會的高峰期，但能否見到純屬運氣。推薦兩條路線，感受不同氛圍：</p>
+                        <ul>
+                            <li><strong>花見小路：</strong>祇園最主要的舞台，像一齣華麗的歌舞伎。兩側是門戶緊閉的高級料亭，光影交織，充滿神秘感。</li>
+                            <li><strong>白川南通：</strong>若說花見小路是舞台，這裡就是一首溫柔的抒情詩。運河潺潺，楊柳依依，水面映照著溫柔燈火，寧靜而優美。</li>
+                        </ul>
+
+                        <h4><i class="fa-solid fa-ice-cream"></i> 甜蜜的休憩</h4>
+                        <p>在經歷了屏息凝神的漫步後，一份精緻的京都甜點是最好的犒賞。</p>
+                        <div class="recommendation-card">
+                           <i class="fa-solid fa-leaf"></i>
+                           <div class="recommendation-card-content">
+                               <h4>茶寮都路里 祇園本店 (從容之選)</h4>
+                               <p>祇園抹茶聖代的代名詞，營業時間較晚，適合悠閒散步後造訪。必點「特選都路里聖代」，但請做好排隊的心理準備。</p>
+                           </div>
+                        </div>
+                        <div class="recommendation-card">
+                           <i class="fa-solid fa-house-chimney-window"></i>
+                           <div class="recommendation-card-content">
+                               <h4>ぎおん小森 (傳統之選)</h4>
+                               <p>由真正的茶屋改建，可在榻榻米上欣賞庭園，品嚐藝術品般的蕨餅。<strong>注意：最後點餐時間較早，建議先查詢官網確認。</strong></p>
+                           </div>
+                        </div>
+                    </div>
+                </details>
+            </div>
+
+            <!-- Map Section -->
+            <div class="map-container">
+                <h3><i class="fa-solid fa-map-location-dot"></i> 行程相對位置地圖</h3>
+                <p>這是一份互動地圖，包含了本日所有關鍵地點。您可以縮放、拖曳，並點擊圖標查看地點名稱。</p>
+                <div id="osm-map"></div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // Tab switching function
+        function showTab(event, tabName) {
+            const parentContent = event.currentTarget.closest('.content');
+            
+            const tabContents = parentContent.querySelectorAll(".tab-content");
+            tabContents.forEach(tc => {
+                tc.style.display = "none";
+                tc.classList.remove("active");
+            });
+
+            const tabButtons = parentContent.querySelectorAll(".tab-button");
+            tabButtons.forEach(btn => btn.classList.remove("active"));
+
+            parentContent.querySelector("#" + tabName).style.display = "block";
+            parentContent.querySelector("#" + tabName).classList.add("active");
+            event.currentTarget.classList.add("active");
+        }
+
+        // Initialize OpenStreetMap
+        document.addEventListener('DOMContentLoaded', function () {
+            // Define coordinates for key locations
+            const locations = {
+                fushimiInari: { lat: 34.9671, lng: 135.7726, name: "伏見稻荷大社" },
+                keihanFushimi: { lat: 34.9675, lng: 135.7683, name: "京阪電車 伏見稲荷駅" },
+                kiyomizuGojo: { lat: 34.9961, lng: 135.7712, name: "京阪電車 清水五条駅" },
+                kiyomizuDera: { lat: 34.9948, lng: 135.7851, name: "清水寺" },
+                sannenzaka: { lat: 34.9978, lng: 135.7821, name: "三年坂" },
+                yasakaKoshindo: { lat: 34.9995, lng: 135.7812, name: "八坂庚申堂" },
+                yasakaShrine: { lat: 35.0036, lng: 135.7785, name: "八坂神社" },
+                gionCorner: { lat: 35.0016, lng: 135.7750, name: "祇園 (花見小路)" }
+            };
+
+            // Calculate center of the map
+            const centerLat = (locations.fushimiInari.lat + locations.yasakaShrine.lat) / 2;
+            const centerLng = (locations.fushimiInari.lng + locations.gionCorner.lng) / 2;
+
+            // Create map
+            const map = L.map('osm-map').setView([centerLat, centerLng], 14);
+
+            // Add tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(map);
+
+            // Add markers
+            for (const key in locations) {
+                const loc = locations[key];
+                L.marker([loc.lat, loc.lng]).addTo(map)
+                    .bindPopup(`<b>${loc.name}</b>`);
+            }
+            
+            // Optional: Add a polyline to suggest a route
+            const routePoints = [
+                [locations.keihanFushimi.lat, locations.keihanFushimi.lng],
+                [locations.kiyomizuGojo.lat, locations.kiyomizuGojo.lng],
+                [locations.kiyomizuDera.lat, locations.kiyomizuDera.lng],
+                [locations.sannenzaka.lat, locations.sannenzaka.lng],
+                [locations.yasakaShrine.lat, locations.yasakaShrine.lng],
+                [locations.gionCorner.lat, locations.gionCorner.lng]
+            ];
+
+            const polyline = L.polyline(routePoints, {color: 'var(--primary-color)', weight: 3, opacity: 0.7, dashArray: '5, 10'}).addTo(map);
+
+            // Zoom the map to the polyline
+            map.fitBounds(polyline.getBounds().pad(0.1));
+        });
+    </script>
+
+</body>
+</html>

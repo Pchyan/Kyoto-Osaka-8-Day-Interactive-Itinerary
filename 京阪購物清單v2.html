@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>京阪互動購物清單</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #F9F8F6; /* Slightly warmer background */
+            color: #4A4543;
+        }
+        .active-filter {
+            background-color: #7B6D64 !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .filter-btn {
+            transition: all 0.3s ease;
+        }
+        .location-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #EAE4E0;
+        }
+        .location-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .item-list {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .item-list.open {
+            max-height: 1000px; /* Increased max-height for longer lists */
+        }
+        .checklist-item input[type="checkbox"]:checked + label {
+            text-decoration: line-through;
+            color: #a0aec0;
+        }
+        .checklist-item input[type="checkbox"] {
+            accent-color: #A59487;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 280px;
+        }
+        #map { 
+            height: 500px; 
+            width: 100%;
+            border-radius: 1rem; /* Rounded corners for the map */
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .leaflet-popup-content-wrapper {
+            border-radius: 0.5rem;
+        }
+        .leaflet-popup-content {
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 320px;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-[#6A5F5D]">京阪8日遊 互動購物清單 (2024-2025更新版)</h1>
+            <p class="mt-2 text-lg text-gray-600">您的個人化京阪購物與美食助理</p>
+        </header>
+
+        <nav class="bg-white/80 backdrop-blur-sm rounded-xl shadow-md p-4 sticky top-4 z-10 mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="w-full md:w-auto">
+                    <p class="font-bold text-gray-700 mb-2 text-center md:text-left">主要分類</p>
+                    <div id="category-filters" class="flex justify-center space-x-2 bg-gray-200 p-1 rounded-lg">
+                        <button data-filter="take-home" class="filter-btn w-full md:w-auto px-4 py-2 text-sm font-semibold rounded-md text-gray-700 active-filter">🎁 可帶回國</button>
+                        <button data-filter="dine-in" class="filter-btn w-full md:w-auto px-4 py-2 text-sm font-semibold rounded-md text-gray-700">🍜 在地品嚐</button>
+                    </div>
+                </div>
+                <div class="w-full md:w-auto">
+                    <p class="font-bold text-gray-700 mb-2 text-center md:text-left">地區篩選</p>
+                    <div id="city-filters" class="flex justify-center space-x-2 bg-gray-200 p-1 rounded-lg">
+                        <button data-filter="all" class="filter-btn w-full md:w-auto px-4 py-2 text-sm font-semibold rounded-md text-gray-700 active-filter">全部</button>
+                        <button data-filter="kyoto" class="filter-btn w-full md:w-auto px-4 py-2 text-sm font-semibold rounded-md text-gray-700">京都</button>
+                        <button data-filter="osaka" class="filter-btn w-full md:w-auto px-4 py-2 text-sm font-semibold rounded-md text-gray-700">大阪</button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        
+        <section id="charts-section" class="mb-12">
+            <h2 class="text-2xl font-bold text-center mb-6 text-[#6A5F5D]">購物類型分析</h2>
+            <p class="text-center text-gray-600 mb-8 max-w-3xl mx-auto">這份圖表分析了「可帶回國」的伴手禮類型。京都以傳統甜點和精緻雜貨見長，而大阪則在流行文化周邊和創意零食上展現活力。這能幫助您快速掌握兩地的購物特色，規劃您的採購重點。</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-4 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-semibold text-center mb-4">京都伴手禮分佈</h3>
+                    <div class="chart-container mx-auto max-w-md">
+                        <canvas id="kyoto-chart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-semibold text-center mb-4">大阪伴手禮分佈</h3>
+                    <div class="chart-container mx-auto max-w-md">
+                        <canvas id="osaka-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <main id="item-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Shopping items will be rendered here by JavaScript -->
+        </main>
+
+        <section id="map-section" class="mt-12">
+            <h2 class="text-2xl font-bold text-center mb-6 text-[#6A5F5D]">相關位置地圖</h2>
+            <p class="text-center text-gray-600 mb-8 max-w-3xl mx-auto">這張地圖標示了清單中提到的主要購物地點和美食區。您可以點擊地圖上的標記查看地點名稱，方便您規劃路線。</p>
+            <div id="map"></div>
+        </section>
+
+    </div>
+
+    <script>
+        // --- DATA (Updated for 2024-2025) ---
+        const shoppingData = {
+            'take-home': {
+                'kyoto': [
+                    {
+                        location: "京都車站",
+                        icon: "🚉",
+                        coords: [34.9858, 135.7588],
+                        items: [
+                            { name: "茶之菓 (MALEBRANCHE)", type: "甜點" },
+                            { name: "中村藤吉 (抹茶甜點及茶葉)", type: "甜點" },
+                            { name: "PRESS BUTTER SAND (奶油夾心餅)", type: "甜點" },
+                            { name: "京都祇園あのん (Anone) 麻糬最中", type: "甜點" },
+                            { name: "伊勢丹百貨地下街伴手禮", type: "綜合" },
+                        ]
+                    },
+                    {
+                        location: "錦市場",
+                        icon: "🥕",
+                        coords: [35.0050, 135.7640],
+                        items: [
+                            { name: "京漬物 (各式醃菜)", type: "鹹食" },
+                            { name: "SNOOPY茶屋周邊商品", type: "動漫/角色" },
+                            { name: "有次 (Aritsugu) 的廚刀", type: "雜貨" },
+                            { name: "京丹波 (烤栗子)", type: "甜點" },
+                        ]
+                    },
+                    {
+                        location: "四条河原町",
+                        icon: "🏬",
+                        coords: [35.0045, 135.7681],
+                        items: [
+                            { name: "高島屋、京都BAL、大丸百貨", type: "綜合" },
+                            { name: "LOFT、淳久堂書店", type: "雜貨" },
+                            { name: "Disney Store 旗艦店", type: "動漫/角色" },
+                            { name: "Good Nature Station (天然有機商品)", type: "雜貨" },
+                        ]
+                    },
+                    {
+                        location: "新京極・寺町京極",
+                        icon: "🛍️",
+                        coords: [35.0068, 135.7671],
+                        items: [
+                            { name: "藥妝 (大國、松本清、SUNDRUG)", type: "藥妝" },
+                            { name: "WEGO、GU 潮流服飾", type: "服飾" },
+                            { name: "鳩居堂的文具、線香", type: "雜貨" },
+                            { name: "#C-pla、GASHAPON之森 (扭蛋)", type: "動漫/角色" },
+                        ]
+                    },
+                    {
+                        location: "東山 (清水寺周邊)",
+                        icon: "🏮",
+                        coords: [34.9949, 135.7850],
+                        items: [
+                            { name: "よーじや (Yojiya) 的吸油面紙/美妝", type: "藥妝" },
+                            { name: "生八橋 (聖護院、西尾)", type: "甜點" },
+                            { name: "七味家本舖的七味粉", type: "鹹食" },
+                            { name: "京都北山 (茶之菓) 清水坂店", type: "甜點" },
+                        ]
+                    }
+                ],
+                'osaka': [
+                    {
+                        location: "日本橋電電城",
+                        icon: "🎮",
+                        coords: [34.6625, 135.5060],
+                        items: [
+                            { name: "Animate、K-BOOKS 動漫商品", type: "動漫/角色" },
+                            { name: "Joshin Super Kids Land 模型", type: "動漫/角色" },
+                            { name: "Super Potato、駿河屋 懷舊電玩", type: "動漫/角色" },
+                            { name: "各式扭蛋店、一番賞", type: "動漫/角色" },
+                        ]
+                    },
+                    {
+                        location: "心齋橋・道頓堀",
+                        icon: "💖",
+                        coords: [34.6687, 135.5013],
+                        items: [
+                            { name: "大丸、PARCO 百貨 (6F任天堂/卡普空)", type: "綜合" },
+                            { name: "Sanrio Gallery (三麗鷗專賣店)", type: "動漫/角色" },
+                            { name: "固力果屋 (Glico-ya) 限定零食", type: "零食" },
+                            { name: "唐吉訶德 (道頓堀店/御堂筋店)", type: "綜合" },
+                            { name: "松本清、大國藥妝", type: "藥妝" },
+                        ]
+                    },
+                    {
+                        location: "梅田",
+                        icon: "🏙️",
+                        coords: [34.7025, 135.4959],
+                        items: [
+                            { name: "阪急/阪神/大丸百貨", type: "綜合" },
+                            { name: "LUCUA / Grand Front Osaka", type: "綜合" },
+                            { name: "KIDDY LAND (角色商品)", type: "動漫/角色" },
+                            { name: "Yodobashi Camera 電器", type: "電器" },
+                            { name: "Bâton d'or (高級Pocky)", type: "甜點" },
+                        ]
+                    },
+                    {
+                        location: "環球影城 (USJ)",
+                        icon: "🎢",
+                        coords: [34.6656, 135.4325],
+                        items: [
+                            { name: "超級任天堂世界能量手環", type: "動漫/角色" },
+                            { name: "哈利波特魔法世界魔杖", type: "動漫/角色" },
+                            { name: "園區內限定的各式禮品", type: "動漫/角色" },
+                        ]
+                    },
+                    {
+                        location: "關西機場",
+                        icon: "✈️",
+                        coords: [34.4343, 135.2444],
+                        items: [
+                            { name: "Royce' 巧克力", type: "甜點" },
+                            { name: "白色戀人 (Shiroi Koibito)", type: "甜點" },
+                            { name: "東京香蕉 (Tokyo Banana)", type: "甜點" },
+                            { name: "Sugar Butter Tree 夾心餅", type: "甜點" },
+                        ]
+                    }
+                ]
+            },
+            'dine-in': {
+                'kyoto': [
+                    {
+                        location: "京都車站",
+                        icon: "🚉",
+                        coords: [34.9858, 135.7588],
+                        items: [
+                            { name: "京都拉麺小路 (推薦ますたに)", type: "拉麵" },
+                            { name: "名代豬排 (かつくら)", type: "日式" },
+                            { name: "東洋亭漢堡排", type: "洋食" },
+                            { name: "はしたて (和久傳系列)", type: "日式" },
+                        ]
+                    },
+                    {
+                        location: "錦市場",
+                        icon: "🥕",
+                        coords: [35.0050, 135.7640],
+                        items: [
+                            { name: "三木雞卵 (玉子燒)", type: "小吃" },
+                            { name: "鮮魚木村 (生魚片串)", type: "小吃" },
+                            { name: "こんなもんじゃ (豆乳甜甜圈/冰淇淋)", type: "小吃" },
+                        ]
+                    },
+                    {
+                        location: "嵐山",
+                        icon: "�",
+                        coords: [35.0160, 135.6740],
+                        items: [
+                            { name: "嵐山よしむら (蕎麥麵)", type: "日式" },
+                            { name: "鯛匠HANANA (鯛魚茶泡飯)", type: "日式" },
+                            { name: "% ARABICA 咖啡", type: "咖啡" },
+                            { name: "古都芋本舖 (冰淇淋)", type: "甜點" },
+                        ]
+                    },
+                    {
+                        location: "祇園・河原町",
+                        icon: "🌸",
+                        coords: [35.0039, 135.7720],
+                        items: [
+                            { name: "茶寮都路里 (抹茶聖代)", type: "甜點" },
+                            { name: "壹錢洋食 (古早味大阪燒)", type: "小吃" },
+                            { name: "Red Rock (烤牛肉丼)", type: "丼飯" },
+                            { name: "INODA COFFEE (咖啡廳)", type: "咖啡" },
+                        ]
+                    }
+                ],
+                'osaka': [
+                    {
+                        location: "黑門市場",
+                        icon: "🐟",
+                        coords: [34.6649, 135.5065],
+                        items: [
+                            { name: "まぐろや黒銀 (鮪魚專賣)", type: "海鮮" },
+                            { name: "西川鮮魚店 (現烤海鮮)", type: "海鮮" },
+                            { name: "丸善食肉店 (神戶牛)", type: "和牛" },
+                            { name: "高橋食品 (豆漿)", type: "飲品" },
+                        ]
+                    },
+                    {
+                        location: "道頓堀",
+                        icon: "🦀",
+                        coords: [34.6687, 135.5013],
+                        items: [
+                            { name: "かに道楽 (螃蟹料理)", type: "海鮮" },
+                            { name: "美津の (米其林推薦大阪燒)", type: "大阪燒" },
+                            { name: "あっちち本舗 或 くくる (章魚燒)", type: "小吃" },
+                            { name: "金龍 或 一蘭 (拉麵)", type: "拉麵" },
+                            { name: "だるま (達摩) 串炸", type: "串炸" },
+                        ]
+                    },
+                    {
+                        location: "梅田",
+                        icon: "🏙️",
+                        coords: [34.7025, 135.4959],
+                        items: [
+                            { name: "きじ (大阪燒)", type: "大阪燒" },
+                            { name: "HARBS (水果千層蛋糕)", type: "甜點" },
+                            { name: "利久牛舌", type: "日式" },
+                        ]
+                    }
+                ]
+            }
+        };
+
+        // --- GLOBAL VARIABLES ---
+        let currentCategory = 'take-home';
+        let currentCity = 'all';
+        let kyotoChart, osakaChart, map;
+        let appData; // Use a mutable data object
+
+        // --- DOM ELEMENTS ---
+        const itemGrid = document.getElementById('item-grid');
+        const categoryFilters = document.getElementById('category-filters');
+        const cityFilters = document.getElementById('city-filters');
+        const chartsSection = document.getElementById('charts-section');
+
+        // --- FUNCTIONS ---
+
+        /**
+         * Load data from localStorage or use initial data
+         */
+        function loadData() {
+            const savedData = localStorage.getItem('shoppingData');
+            appData = savedData ? JSON.parse(savedData) : JSON.parse(JSON.stringify(shoppingData));
+        }
+
+        /**
+         * Save data to localStorage
+         */
+        function saveData() {
+            localStorage.setItem('shoppingData', JSON.stringify(appData));
+        }
+
+        /**
+         * Renders the location cards based on current filters
+         */
+        function renderCards() {
+            itemGrid.innerHTML = '';
+            let dataToShow = [];
+            let originalIndices = [];
+
+            if (currentCity === 'all') {
+                const kyotoData = appData[currentCategory]['kyoto'] || [];
+                const osakaData = appData[currentCategory]['osaka'] || [];
+                dataToShow = [...kyotoData, ...osakaData];
+                originalIndices = [
+                    ...kyotoData.map((_, i) => ({ city: 'kyoto', index: i })),
+                    ...osakaData.map((_, i) => ({ city: 'osaka', index: i }))
+                ];
+            } else {
+                dataToShow = appData[currentCategory][currentCity] || [];
+                originalIndices = dataToShow.map((_, i) => ({ city: currentCity, index: i }));
+            }
+            
+            if (dataToShow.length === 0) {
+                itemGrid.innerHTML = `<p class="col-span-full text-center text-gray-500 py-10">此分類下沒有項目。</p>`;
+                return;
+            }
+
+            dataToShow.forEach((location, i) => {
+                const { city, index } = originalIndices[i];
+                const card = document.createElement('div');
+                card.className = 'location-card bg-white rounded-xl shadow-md overflow-hidden';
+                card.dataset.city = city;
+                card.dataset.index = index;
+
+                card.innerHTML = `
+                    <div class="p-4 bg-gray-50 border-b flex items-center justify-between cursor-pointer" data-action="toggle">
+                        <h3 class="text-xl font-bold text-gray-800">${location.icon} ${location.location}</h3>
+                        <span class="text-gray-400 transform transition-transform duration-300">▼</span>
+                    </div>
+                    <div class="item-list p-4 bg-white">
+                        <ul class="space-y-3">
+                            ${location.items.map((item, itemIndex) => `
+                                <li class="checklist-item flex items-center group" data-item-index="${itemIndex}">
+                                    <input type="checkbox" id="item-${city}-${index}-${itemIndex}" class="mr-3 h-4 w-4 rounded border-gray-300 focus:ring-0" ${item.checked ? 'checked' : ''}>
+                                    <label for="item-${city}-${index}-${itemIndex}" class="text-gray-700 flex-grow">${item.name} ${item.type ? `<span class='text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded-full'>${item.type}</span>` : ''}</label>
+                                    <button data-action="edit" class="p-1 text-gray-400 hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">✏️</button>
+                                    <button data-action="delete" class="p-1 text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity">🗑️</button>
+                                </li>
+                            `).join('')}
+                        </ul>
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                <input type="text" placeholder="新增品項名稱..." class="border-gray-300 rounded-md shadow-sm text-sm p-2 focus:ring-A59487 focus:border-A59487" data-input="name">
+                                <input type="text" placeholder="品項類別 (可選)" class="border-gray-300 rounded-md shadow-sm text-sm p-2 focus:ring-A59487 focus:border-A59487" data-input="type">
+                            </div>
+                            <button data-action="add" class="mt-2 w-full bg-[#A59487] text-white px-4 py-2 rounded-md hover:bg-[#7B6D64] text-sm font-semibold">新增品項</button>
+                        </div>
+                    </div>
+                `;
+                itemGrid.appendChild(card);
+            });
+        }
+
+        /**
+         * Updates the visual state of filter buttons
+         */
+        function updateFilterButtons() {
+            Array.from(categoryFilters.children).forEach(btn => {
+                btn.classList.toggle('active-filter', btn.dataset.filter === currentCategory);
+            });
+            Array.from(cityFilters.children).forEach(btn => {
+                btn.classList.toggle('active-filter', btn.dataset.filter === currentCity);
+            });
+            
+            chartsSection.style.display = currentCategory === 'take-home' ? 'block' : 'none';
+        }
+
+        /**
+         * Creates or updates the doughnut charts
+         */
+        function createOrUpdateCharts() {
+            const chartColors = ['#A59487', '#B9A99D', '#D3C9C1', '#6A5F5D', '#9E8A7E'];
+
+            function prepareChartData(city) {
+                const typeCounts = {};
+                appData['take-home'][city].forEach(location => {
+                    location.items.forEach(item => {
+                        const type = item.type || '其他';
+                        typeCounts[type] = (typeCounts[type] || 0) + 1;
+                    });
+                });
+                return {
+                    labels: Object.keys(typeCounts),
+                    data: Object.values(typeCounts),
+                };
+            }
+
+            const kyotoChartData = prepareChartData('kyoto');
+            const osakaChartData = prepareChartData('osaka');
+
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: { family: "'Noto Sans TC', sans-serif" }
+                        }
+                    },
+                    tooltip: {
+                        bodyFont: { family: "'Noto Sans TC', sans-serif" },
+                        titleFont: { family: "'Noto Sans TC', sans-serif" }
+                    }
+                }
+            };
+
+            // Destroy existing charts if they exist
+            if (kyotoChart) kyotoChart.destroy();
+            if (osakaChart) osakaChart.destroy();
+
+            kyotoChart = new Chart(document.getElementById('kyoto-chart'), {
+                type: 'doughnut',
+                data: {
+                    labels: kyotoChartData.labels,
+                    datasets: [{
+                        label: '伴手禮類型',
+                        data: kyotoChartData.data,
+                        backgroundColor: chartColors,
+                        borderColor: '#F9F8F6',
+                        borderWidth: 3
+                    }]
+                },
+                options: chartOptions
+            });
+
+            osakaChart = new Chart(document.getElementById('osaka-chart'), {
+                type: 'doughnut',
+                data: {
+                    labels: osakaChartData.labels,
+                    datasets: [{
+                        label: '伴手禮類型',
+                        data: osakaChartData.data,
+                        backgroundColor: chartColors,
+                        borderColor: '#F9F8F6',
+                        borderWidth: 3
+                    }]
+                },
+                options: chartOptions
+            });
+        }
+
+        /**
+         * Initializes the Leaflet map and adds markers
+         */
+        function initializeMap() {
+            if (map) return; // Initialize map only once
+
+            map = L.map('map').setView([34.8, 135.6], 9); // Centered between Kyoto and Osaka
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(map);
+
+            const allLocations = [...shoppingData['take-home']['kyoto'], ...shoppingData['take-home']['osaka'], ...shoppingData['dine-in']['kyoto'], ...shoppingData['dine-in']['osaka']];
+            
+            const uniqueLocations = allLocations.reduce((acc, current) => {
+                if (!acc.find(item => item.location === current.location)) {
+                    acc.push(current);
+                }
+                return acc;
+            }, []);
+
+            uniqueLocations.forEach(loc => {
+                if(loc.coords) {
+                    L.marker(loc.coords).addTo(map)
+                        .bindPopup(`<b>${loc.icon} ${loc.location}</b>`);
+                }
+            });
+        }
+        
+        // --- EVENT LISTENERS ---
+        categoryFilters.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON' && e.target.dataset.filter !== currentCategory) {
+                currentCategory = e.target.dataset.filter;
+                renderCards();
+                updateFilterButtons();
+            }
+        });
+
+        cityFilters.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON' && e.target.dataset.filter !== currentCity) {
+                currentCity = e.target.dataset.filter;
+                renderCards();
+                updateFilterButtons();
+            }
+        });
+
+        itemGrid.addEventListener('click', (e) => {
+            const target = e.target;
+            const card = target.closest('.location-card');
+            if (!card) return;
+
+            const city = card.dataset.city;
+            const locationIndex = parseInt(card.dataset.index);
+            const action = target.dataset.action || target.parentElement.dataset.action;
+
+            if (action === 'toggle') {
+                card.querySelector('.item-list').classList.toggle('open');
+                card.querySelector('span').classList.toggle('rotate-180');
+            }
+
+            if (action === 'add') {
+                const nameInput = card.querySelector('input[data-input="name"]');
+                const typeInput = card.querySelector('input[data-input="type"]');
+                const name = nameInput.value.trim();
+                const type = typeInput.value.trim() || '其他'; // Default type if empty
+
+                if (name) {
+                    appData[currentCategory][city][locationIndex].items.push({ name, type, checked: false });
+                    saveData();
+                    renderCards();
+                    // Re-open the card that was just added to
+                    setTimeout(() => {
+                        const newCard = document.querySelector(`[data-city='${city}'][data-index='${locationIndex}']`);
+                        if (newCard) {
+                            newCard.querySelector('.item-list').classList.add('open');
+                            newCard.querySelector('span').classList.add('rotate-180');
+                        }
+                    }, 0);
+                    createOrUpdateCharts(); // Update charts after adding new item
+                }
+            }
+
+            const listItem = target.closest('.checklist-item');
+            if (listItem) {
+                const itemIndex = parseInt(listItem.dataset.itemIndex);
+                if (action === 'delete') {
+                    if (confirm('確定要刪除這個項目嗎？')) {
+                        appData[currentCategory][city][locationIndex].items.splice(itemIndex, 1);
+                        saveData();
+                        renderCards();
+                        createOrUpdateCharts();
+                    }
+                }
+
+                if (action === 'edit') {
+                    const item = appData[currentCategory][city][locationIndex].items[itemIndex];
+                    const newName = prompt('請輸入新的項目名稱：', item.name);
+                    if (newName && newName.trim() !== '') {
+                        item.name = newName.trim();
+                        saveData();
+                        renderCards();
+                    }
+                }
+            }
+        });
+        
+        itemGrid.addEventListener('change', (e) => {
+            if (e.target.type === 'checkbox') {
+                const card = e.target.closest('.location-card');
+                const listItem = e.target.closest('.checklist-item');
+                if (card && listItem) {
+                    const city = card.dataset.city;
+                    const locationIndex = parseInt(card.dataset.index);
+                    const itemIndex = parseInt(listItem.dataset.itemIndex);
+                    appData[currentCategory][city][locationIndex].items[itemIndex].checked = e.target.checked;
+                    saveData();
+                    // No need to re-render for a checkbox change, just update the style
+                    listItem.querySelector('label').classList.toggle('line-through', e.target.checked);
+                    listItem.querySelector('label').classList.toggle('text-gray-400', e.target.checked);
+                }
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            renderCards();
+            createOrUpdateCharts();
+            initializeMap();
+        });
+
+    </script>
+</body>
+</html>

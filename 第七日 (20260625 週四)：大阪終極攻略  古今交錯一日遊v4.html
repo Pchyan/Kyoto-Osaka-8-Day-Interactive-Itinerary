@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 7 大阪終極攻略 | 古今交錯一日遊</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <style>
+        /* 引入 Google Fonts 的 Noto Sans TC 字體 */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+        
+        /* CSS 變數定義，方便統一管理顏色、陰影等樣式 */
+        :root {
+            --primary-color: #007bff; /* 主題色 */
+            --secondary-color: #ff4757; /* 次要色 */
+            --dark-bg: #1a1a2e; /* 深色背景 */
+            --light-bg: #f8f9fa; /* 淺色背景 */
+            --text-color: #333; /* 文字顏色 */
+            --card-shadow: 0 8px 25px rgba(0,0,0,0.08); /* 卡片陰影 */
+            --border-radius: 15px; /* 圓角半徑 */
+        }
+
+        /* 基本樣式重設 */
+        * {
+            box-sizing: border-box;
+            scroll-behavior: smooth; /* 平滑滾動效果 */
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            margin: 0;
+            line-height: 1.8;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            -webkit-font-smoothing: antialiased; /* 字體反鋸齒，提升渲染效果 */
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 頂部導覽列樣式 */
+        nav {
+            position: sticky;
+            top: 0;
+            background-color: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px); /* 毛玻璃效果 */
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 10px 0;
+            z-index: 1000;
+            text-align: center;
+        }
+        nav a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 700;
+            margin: 0 10px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        nav a:hover, nav a.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* 頁首英雄區塊樣式 */
+        .hero {
+            height: 65vh;
+            background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.2)), url('https://images.unsplash.com/photo-1579584393946-b5e54f7a26a9?q=80&w=1770&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        .hero h1 {
+            font-size: 3.2rem;
+            margin: 0;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.7);
+        }
+        .hero p {
+            font-size: 1.25rem;
+            max-width: 600px;
+            margin-top: 15px;
+            text-shadow: 1px 1px 5px rgba(0,0,0,0.6);
+        }
+
+        /* 區塊通用樣式 */
+        .section {
+            padding: 80px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .section:last-child {
+            border-bottom: none;
+        }
+        .section-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        .section-header .time-badge {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+        .section-header h2 {
+            font-size: 2.5rem;
+            margin: 0;
+        }
+        .section-header p {
+            font-size: 1.1rem;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        /* 卡片樣式 */
+        .card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            padding: 30px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+        }
+        .card h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        .card h4 {
+            font-size: 1.2rem;
+            color: #333;
+            margin-top: 25px;
+            margin-bottom: 10px;
+        }
+        
+        /* 雙欄佈局 */
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: center;
+        }
+        .two-columns img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: var(--border-radius);
+        }
+
+        /* 頁籤元件樣式 */
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.05rem;
+            font-weight: 500;
+            cursor: pointer;
+            position: relative;
+            color: #555;
+            transition: all 0.3s ease;
+            border-radius: 8px 8px 0 0;
+        }
+        .tab-button.active {
+            color: var(--primary-color);
+            font-weight: 700;
+            background-color: #f0f6ff;
+        }
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--primary-color);
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 圖示列表樣式 */
+        ul.icon-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul.icon-list li {
+            padding-left: 38px;
+            position: relative;
+            margin-bottom: 18px;
+            min-height: 28px;
+            display: flex;
+            align-items: center;
+        }
+        ul.icon-list li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 28px;
+            height: 28px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        
+        /* 定義各種圖示 */
+        li.icon-update::before { background-image: url('https://api.iconify.design/fluent-emoji-flat/sparkles.svg'); }
+        li.icon-castle::before { background-image: url('https://api.iconify.design/fluent-emoji-flat/castle.svg'); }
+        li.icon-camera::before { background-image: url('https://api.iconify.design/fluent-emoji-flat/camera.svg'); }
+        li.icon-boat::before { background-image: url('https://api.iconify.design/fluent-emoji-flat/speedboat.svg'); }
+        li.icon-ticket::before { background-image: url('https://api.iconify.design/fluent-emoji-flat/ticket.svg'); }
+        li.icon-train::before { background-image: url('https://api.iconify.design/fluent-emoji-flat/train.svg'); }
+        li.icon-food::before { background-image: url('https://api.iconify.design/fluent-emoji-flat/curry-rice.svg'); }
+        li.icon-shopping::before { background-image: url('https://api.iconify.design/fluent-emoji-flat/shopping-bags.svg'); }
+        li.icon-game::before { background-image: url('https://api.iconify.design/fluent-emoji-flat/video-game.svg'); }
+        li.icon-map::before { background-image: url('https://api.iconify.design/fluent-emoji-flat/world-map.svg'); }
+        li.icon-ferris-wheel::before { background-image: url('https://api.iconify.design/fluent-emoji-flat/ferris-wheel.svg'); }
+        li.icon-strategy::before { background-image: url('https://api.iconify.design/fluent-emoji-flat/scroll.svg'); }
+        li.icon-money::before { background-image: url('https://api.iconify.design/fluent-emoji-flat/money-bag.svg'); }
+        li.icon-history::before { background-image: url('https://api.iconify.design/fluent-emoji-flat/hourglass-done.svg'); }
+        li.icon-culture::before { background-image: url('https://api.iconify.design/fluent-emoji-flat/artist-palette.svg'); }
+        li.icon-warning::before { background-image: url('https://api.iconify.design/fluent-emoji-flat/warning.svg'); }
+        li.icon-tshirt::before { background-image: url('https://api.iconify.design/fluent-emoji-flat/t-shirt.svg'); }
+        li.icon-pill::before { background-image: url('https://api.iconify.design/fluent-emoji-flat/pill.svg'); }
+        li.icon-gift::before { background-image: url('https://api.iconify.design/fluent-emoji-flat/wrapped-gift.svg'); }
+        li.icon-cocktail::before { background-image: url('https://api.iconify.design/fluent-emoji-flat/cocktail-glass.svg'); }
+
+        /* 警告/更新提示框樣式 */
+        .info-box {
+            border-radius: var(--border-radius);
+            padding: 20px 25px;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+        }
+        .info-box.warning {
+            background: #fff3cd;
+            border-left: 5px solid #ffeeba;
+            cursor: pointer;
+        }
+        .info-box.warning:hover {
+            box-shadow: 0 4px 15px rgba(255,193,7,0.4);
+            transform: translateY(-3px);
+        }
+        .info-box.update {
+            background: #e0f7fa;
+            border-left: 5px solid #00acc1;
+        }
+        .info-box strong {
+            font-size: 1.2rem;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .info-box.warning strong { color: #856404; }
+        .info-box.update strong { color: #006064; }
+        .warning-details {
+            display: none;
+            margin-top: 15px;
+            border-top: 1px dashed #c3c3c3;
+            padding-top: 15px;
+            font-size: 0.95rem;
+        }
+
+        /* 傍晚區塊的特殊樣式 */
+        #evening {
+            background-color: var(--dark-bg);
+            color: #f0f0f0;
+        }
+        #evening .section-header h2, #evening .section-header p, #evening .card h3 {
+            color: white;
+        }
+        #evening .card {
+            background-color: #2c2c54;
+        }
+        #evening .tab-button {
+            color: #ccc;
+        }
+        #evening .tab-button.active {
+            color: white;
+            background-color: #3b3b74;
+        }
+        #evening .tab-button.active::after {
+            background: white;
+        }
+
+        /* 地圖容器樣式 */
+        .map-container {
+            height: 450px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            margin-top: 20px;
+            overflow: hidden; /* 確保子元素圓角 */
+        }
+
+        /* 回到頂部按鈕 */
+        .back-to-top {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: var(--card-shadow);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1001;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .back-to-top.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* RWD 適應性網頁設計 */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .hero p { font-size: 1.1rem; }
+            .section-header h2 { font-size: 2rem; }
+            .two-columns { grid-template-columns: 1fr; }
+            .two-columns img { 
+                margin-bottom: 20px;
+                height: 250px;
+            }
+            nav a { margin: 0 5px; font-size: 0.85rem; padding: 5px; }
+            .tabs { justify-content: center; }
+            .tab-button { padding: 10px 15px; font-size: 0.9rem;}
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 頂部導覽列 -->
+    <nav>
+        <a href="#overview">行程總覽</a>
+        <a href="#morning">上午 | 大阪城</a>
+        <a href="#afternoon">下午 | 心齋橋</a>
+        <a href="#evening">傍晚 | 梅田</a>
+        <a href="#map-section">相對地圖</a>
+    </nav>
+
+    <!-- 頁首英雄區塊 -->
+    <header class="hero">
+        <h1>第七日：古今交錯的大阪</h1>
+        <p>從歷史天守閣到繁華不夜城，一日盡覽大阪的雙重魅力</p>
+    </header>
+
+    <main>
+        <!-- 行程總覽區塊 -->
+        <div id="overview" class="container section">
+             <div class="section-header">
+                <span class="time-badge">本日主題</span>
+                <h2>行程總覽與達人建議</h2>
+            </div>
+
+            <div class="card info-box update">
+                <h3>✨ 版本更新摘要</h3>
+                <ul class="icon-list">
+                    <li class="icon-update"><strong>資訊更新：</strong>強化了票券購買建議，提醒您出發前務必確認官網最新資訊。</li>
+                    <li class="icon-map"><strong>地圖整合：</strong>於頁尾新增 OpenStreetMap，標示出三大景點的相對位置，讓您對行程有更宏觀的理解。</li>
+                </ul>
+                <p style="margin-top:15px; font-size: 0.9rem;"><strong>溫馨提醒：</strong>景點開放時間、店家資訊與票券優惠可能隨時變更，本攻略資訊截至 2025 年，出發前請務必再次查證官方網站。</p>
+            </div>
+
+            <div class="card">
+                <h3>💡 旅遊規劃師筆記</h3>
+                <p>本日行程將帶您穿越大阪的過去與現在。從見證歷史更迭的大阪城，到引領潮流的心齋橋，最後在梅田的摩天大樓間結束一天。這是一趟對體力、腳力與荷包的終極考驗，但收穫絕對值得！</p>
+                <ul class="icon-list">
+                    <li class="icon-money"><strong>票券策略：</strong>本日以地鐵為主要交通工具。若您的行程包含多個需門票的景點（如大阪城、梅田藍天大廈），購買<strong>「大阪周遊券 (Osaka Amazing Pass)」</strong>將是最高CP值的選擇！它不僅包含多數地鐵路線，還能免費進入許多熱門景點。<strong>[重要] </strong>請務必在出發前至其官網確認當年度的免費設施列表與使用條款。</li>
+                    <li class="icon-train"><strong>體力與時間：</strong>本日步行量極大，大阪城公園、心齋橋商店街、梅田地下街都是廣闊的步行區域。請務必穿著最舒適的鞋子，並適時利用行程中的休息點補充體力。</li>
+                    <li class="icon-strategy"><strong>午餐規劃：</strong>午餐是承上啟下的關鍵。我們為您設計了彈性選項，您可以根據當下的體力與心情，選擇在大阪城悠閒用餐，或直奔心齋橋的美食戰場。</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 上午：大阪城 -->
+        <section id="morning" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <span class="time-badge">09:30 - 12:30</span>
+                    <h2>大阪城時空漫遊</h2>
+                    <p>踏入歷史的洪流，感受權力的更迭</p>
+                </div>
+                
+                <div class="card">
+                    <h3>大阪城的三重生命</h3>
+                    <p>您腳下的大阪城並非單一建築，而是承載了三段歷史的疊加。理解這點，您的旅程將更有深度。</p>
+                    <ul class="icon-list">
+                        <li class="icon-history"><strong>豐臣的夢想 (1583-1615)：</strong>由豐臣秀吉所建，金碧輝煌的「展示之城」，象徵統一天下的野心，但在戰火中灰飛煙滅。</li>
+                        <li class="icon-castle"><strong>德川的統治 (1620-1868)：</strong>德川幕府在廢墟上重建，石牆更高、壕溝更深，是一座抹除過去、宣示權威的「權力之城」。</li>
+                        <li class="icon-culture"><strong>市民的復興 (1931-至今)：</strong>今日所見的天守閣，由市民捐款以鋼筋混凝土建成，是承載城市精神的「象徵之城」。</li>
+                    </ul>
+                </div>
+
+                <div class="two-columns">
+                    <div>
+                        <img src="https://images.unsplash.com/photo-1587513367988-1209995811c8?q=80&w=1887&auto=format&fit=crop" alt="大阪城天守閣的壯麗照片">
+                    </div>
+                    <div class="card">
+                        <h3>遊覽重點與路線</h3>
+                        <p>我們將模擬古時武將登城的路線，從「大手門」攻入，一步步解構這座要塞的權力語言。</p>
+                        <ul class="icon-list">
+                            <li class="icon-castle"><strong>巨石之壁：</strong>感受大手門與櫻門旁「蛸石」的震撼，這些從百里外運來的巨石，是德川幕府權力的無聲炫耀。</li>
+                            <li class="icon-camera"><strong>天守閣：</strong>登上8樓展望台，360度俯瞰大阪市景。內部是現代化歷史博物館，展示戰國時代的文物。</li>
+                            <li class="icon-boat"><strong>[達人秘訣] 西之丸庭園：</strong>這裡是拍攝天守閣全景的<strong>黃金攝影點</strong>，以寬闊草坪為前景，能拍出明信片級的美照！(周遊券免費)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>午餐的十字路口 (12:30 - 13:30)</h3>
+                    <p>經過三小時的歷史洗禮，您正站在一個關鍵的決策點。這不僅是選擇午餐，更是決定下午的旅行節奏與體驗。請根據當下家庭的「體力」與「心情」做出最明智的選擇。</p>
+                    <div class="tabs">
+                        <button class="tab-button active" onclick="openTab(event, 'lunchA')">方案A：休養生息之道</button>
+                        <button class="tab-button" onclick="openTab(event, 'lunchB')">方案B：高能沉浸之道</button>
+                    </div>
+                    <div id="lunchA" class="tab-content active">
+                        <h4>在大阪城公園內用餐</h4>
+                        <p><strong>核心策略：</strong>便利至上，恢復體力，為下午的購物行程儲備能量。</p>
+                        <p><strong>地點選擇：</strong></p>
+                        <ul>
+                            <li><strong>JO-TERRACE OSAKA：</strong>位於JR大阪城公園站旁，是現代化的餐飲區。提供大阪燒、拉麵、炸豬排、義大利麵及星巴克等多元選擇，氛圍輕鬆休閒。</li>
+                            <li><strong>MIRAIZA OSAKA-JO：</strong>位於天守閣前，由歷史建築改建。提供較精緻的餐飲選項，部分餐廳更能以天守閣為背景用餐，體驗獨特。</li>
+                        </ul>
+                        <p><strong>優點：</strong>✅ 極致便利，節省心力 ✅ 高效體力恢復 ✅ 環境品質卓越<br><strong>缺點：</strong>❌ 缺少探索感 ❌ 價格可能略高</p>
+                    </div>
+                    <div id="lunchB" class="tab-content">
+                        <h4>前往心齋橋用餐</h4>
+                        <p><strong>核心策略：</strong>將午餐作為冒險的起點，直接躍入大阪最繁華的美食心臟地帶。</p>
+                        <p><strong>行動路徑：</strong>從大阪城公園步行至「森之宮站」，搭乘地鐵長堀鶴見綠地線，約9分鐘直達「心齋橋站」。(總移動時間約30-45分鐘)</p>
+                        <p><strong>美食選擇：</strong>幾乎無限！從街頭的章魚燒、拉麵，到百貨公司美食街的精緻料理，再到蛋包飯發源店「北極星」等老牌名店，應有盡有。</p>
+                        <p><strong>優點：</strong>✅ 選擇無限可能 ✅ 無縫銜接下午行程 ✅ 沉浸式體驗大阪活力<br><strong>缺點：</strong>❌ 顯著的體力與時間投資 ❌ 環境擁擠嘈雜 ❌ 高風險的「決策癱瘓」</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 下午：心齋橋 -->
+        <section id="afternoon" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <span class="time-badge">13:30 - 17:30</span>
+                    <h2>心齋橋四小時終極攻略</h2>
+                    <p>潮流、藥妝、動漫的完美作戰計畫</p>
+                </div>
+                <div class="card">
+                    <h3>作戰地圖與黃金路線</h3>
+                    <p>要在四小時內滿足全家需求，需要清晰的戰略。我們的路線將以一個流暢的「U」形動線展開，核心策略是「分進合擊，再行匯流」，最大化購物效率！</p>
+                    <ol>
+                        <li><strong>起點 (心齋橋PARCO)：</strong>直攻動漫與流行文化聖地。</li>
+                        <li><strong>向西擴張 (美國村)：</strong>進入青年潮流與古著的核心區。</li>
+                        <li><strong>戰略中點 (三角公園)：</strong>品嚐米其林推薦小吃，補充能量。</li>
+                        <li><strong>最終衝刺 (心齋橋筋商店街)：</strong>高效率完成藥妝與伴手禮採購。</li>
+                    </ol>
+                    <div class="map-container" id="gmap-shinsaibashi">
+                         <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3281.139433946001!2d135.4990924151703!3d34.67645098044093!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6000e71781ee3d4d%3A0x2f1559903901b0f5!2z5b-D6KKc5qmL6I-v5bqB6KGj!5e0!3m2!1szh-TW!2stw!4v1678888888888" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>分時作戰攻略</h3>
+                    <div class="tabs">
+                        <button class="tab-button active" onclick="openTab(event, 'shopA')">13:30-14:30 | 動漫迷天堂</button>
+                        <button class="tab-button" onclick="openTab(event, 'shopB')">14:30-16:15 | 潮流交匯</button>
+                        <button class="tab-button" onclick="openTab(event, 'shopC')">16:15-17:30 | 終極採購</button>
+                    </div>
+                    <div id="shopA" class="tab-content active">
+                        <h4>次元突破：動漫聖地速攻</h4>
+                        <p>率先滿足女兒的核心願望，是計畫成功的基石！</p>
+                        <ul class="icon-list">
+                            <li class="icon-game"><strong>主戰場 (心齋橋PARCO 6F)：</strong>這裡是日本流行文化的濃縮精華！必逛店家包含 <strong>CAPCOM STORE</strong>、<strong>橡子共和國</strong>、<strong>哥吉拉商店</strong> 及 <strong>蠟筆小新官方商店</strong>。</li>
+                            <li class="icon-strategy"><strong>[達人秘訣] 關鍵次要目標：</strong>販售《ONE PIECE》、《咒術迴戰》等周邊的 <strong>JUMP SHOP</strong>，並不在PARCO內，而在與之相連的<strong>大丸心齋橋店本館9樓</strong>！千萬別錯過。</li>
+                            <li class="icon-culture"><strong>父母的平行路線：</strong>在女兒探索時，父母可從容逛覽PARCO 2F的設計師品牌或大丸百貨的精品與化妝品。</li>
+                        </ul>
+                    </div>
+                    <div id="shopB" class="tab-content">
+                        <h4>潮流交匯：美國村的個性 vs. 心齋橋的洗鍊</h4>
+                        <p>此刻兵分二路，效率最大化！</p>
+                        <ul class="icon-list">
+                           <li class="icon-tshirt"><strong>女兒的主戰場 (美國村)：</strong>深入大阪青年文化的發源地。推薦從大型店鋪如 <strong>KINJI</strong> 或 <strong>古着屋JAM</strong> 開始，探索古著與街頭潮流。</li>
+                           <li class="icon-shopping"><strong>父母的品味之旅：</strong>可探訪美國村入口附近的選物店 <strong>FIRST</strong>，或重新開幕的 <strong>UNIQLO 心齋橋全球旗艦店</strong>，享受更成熟穩重的購物體驗。</li>
+                           <li class="icon-food"><strong>能量補給 (15:45)：</strong>在美國村心臟地帶的「三角公園」，品嚐米其林推薦的<strong>「甲賀流」章魚燒</strong>，體驗道地文化。</li>
+                        </ul>
+                    </div>
+                    <div id="shopC" class="tab-content">
+                        <h4>終極採購：藥妝、快時尚與伴手禮總決戰</h4>
+                        <p>進入最後衝刺階段，沿著心齋橋筋商店街向南推進！</p>
+                        <ul class="icon-list">
+                            <li class="icon-pill"><strong>藥妝採購：</strong>大型連鎖如<strong>松本清</strong>、<strong>大國藥妝</strong>林立。建議備妥清單與護照，集中在一家Tax-Free商店完成採購以節省時間。</li>
+                            <li class="icon-shopping"><strong>快時尚品牌：</strong><strong>GU</strong>、<strong>UNIQLO</strong> 等大型店鋪能滿足全家大小的基本款與流行單品需求。</li>
+                            <li class="icon-gift"><strong>時尚終點站 (心齋橋OPA)：</strong>專為年輕女性打造的時尚殿堂，集中了 <strong>SNIDEL</strong>、<strong>gelato pique</strong> 等一線流行女裝品牌，是母親與女兒的完美收尾。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 傍晚：梅田 -->
+        <section id="evening" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <span class="time-badge">18:00 後</span>
+                    <h2>梅田都會夜景與告別晚宴</h2>
+                    <p>在大阪的璀璨星河中畫下完美句點</p>
+                </div>
+                
+                <div class="info-box warning" onclick="toggleWarning()">
+                    <strong>⚠️ 重要提醒：挑戰「梅田大迷宮」！</strong>
+                    <p>梅田車站結構極度複雜，初來乍到者極易迷路。請點擊此處，查看導航秘訣。</p>
+                    <div class="warning-details">
+                        <p><strong>秘訣1：向高處看，跟隨指標！</strong>放棄研究複雜的地下地圖，抬頭跟緊「梅田スカイビル (Umeda Sky Building)」或「グランフロント大阪 (Grand Front Osaka)」的指示牌。</p>
+                        <p><strong>秘訣2：盡快上到地面！</strong>地下是迷宮，地面是棋盤。找到JR大阪站或各大百貨公司後，在地面上行走會清晰得多。</p>
+                        <p><strong>秘訣3：關鍵路徑！</strong>前往藍天大廈最簡單的路徑，是從JR大阪站中央北口出站，穿過Grand Front Osaka南館旁，找到一條<strong>地下人行道</strong>，穿過隧道即可抵達。</p>
+                    </div>
+                </div>
+
+                <div class="two-columns">
+                    <div class="card">
+                        <h3>🌃 餐前酒：雲端上的感動</h3>
+                        <p>作為旅程的最後一夜，強烈推薦選擇<strong>【梅田藍天大廈 空中庭園展望台】</strong>，為旅程創造一份足以銘記的深刻回憶。</p>
+                        <ul class="icon-list">
+                            <li class="icon-ticket"><strong>極致體驗：</strong>搭乘透明電梯與劃破天際的「懸空電扶梯」，最終抵達173米高、360度完全開放的露天迴廊，感受夜風拂面，腳下是無盡的城市光毯。</li>
+                            <li class="icon-ferris-wheel"><strong>備選方案 (HEP FIVE 摩天輪)：</strong>位於商場頂樓的紅色摩天輪，提供15分鐘的私人空中漫步，氛圍浪漫，是個輕鬆有趣的選擇。</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <img src="https://images.unsplash.com/photo-1613329832202-2374245c3a4e?q=80&w=1887&auto=format&fit=crop" alt="梅田藍天大廈的空中手扶梯">
+                    </div>
+                </div>
+
+                 <div class="card">
+                    <h3>🍽️ 主菜：選擇你的告別晚宴 (20:00後)</h3>
+                    <p>在欣賞完屏息的夜景後，讓我們為旅程選擇最完美的味覺句點。這裡有三種風格迥異的提案。</p>
+                     <div class="tabs">
+                        <button class="tab-button active" onclick="openTab(event, 'dinnerA')">風格一：現代與便利</button>
+                        <button class="tab-button" onclick="openTab(event, 'dinnerB')">風格二：懷舊與探索</button>
+                        <button class="tab-button" onclick="openTab(event, 'dinnerC')">風格三：經典大阪味</button>
+                    </div>
+                    <div id="dinnerA" class="tab-content active">
+                        <h4>百貨餐廳街的精緻饗宴</h4>
+                        <p><strong>地點：</strong>Grand Front Osaka、LUCUA 等商場高樓層餐廳街。</p>
+                        <p><strong>特色：</strong>這是確保品質與舒適度的萬全之策。環境明亮乾淨，選擇極其多元，從高級牛排、和牛壽喜燒到鼎泰豐應有盡有。許多餐廳擁有絕佳窗景，是「零風險的精緻」選擇。</p>
+                    </div>
+                    <div id="dinnerB" class="tab-content">
+                        <h4>新梅田食道街的昭和迷情</h4>
+                        <p><strong>地點：</strong>JR大阪站高架橋下的懷舊區域。</p>
+                        <p><strong>特色：</strong>走進狹窄巷弄，彷彿穿越回昭和時代。這裡是「B級美食」的聖殿，充滿了立食串炸、章魚燒與居酒屋的庶民活力。選擇這裡，是選擇一場感官的冒險與最真實的在地體驗。</p>
+                    </div>
+                    <div id="dinnerC" class="tab-content">
+                        <h4>大阪燒『きじ』的鐵板交響曲</h4>
+                        <p><strong>地點：</strong>梅田藍天大廈地下一樓「滝見小路」復古美食街。</p>
+                        <p><strong>特色：</strong>這是最具敘事連貫性的完美選擇！在雲端飽覽大阪後，直接下樓品嚐這座城市的靈魂食物。<strong>『きじ』(Kiji)</strong> 是大阪最富盛名的大阪燒店家之一，時常大排長龍，店主對台灣旅客尤其友善，為美食增添了無可取代的溫度。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 新增的相對位置地圖區塊 -->
+        <section id="map-section" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <span class="time-badge">地理總覽</span>
+                    <h2>行程相對位置地圖</h2>
+                    <p>了解三大主要地點的地理分佈，讓您對整日動線更有概念。</p>
+                </div>
+                <div class="card">
+                    <h3>三大核心區塊</h3>
+                    <ul class="icon-list">
+                        <li class="icon-castle"><strong>大阪城公園 (東部)：</strong>本日的歷史起點。</li>
+                        <li class="icon-shopping"><strong>心齋橋/難波 (南部)：</strong>下午的購物與美食中心。</li>
+                        <li class="icon-train"><strong>梅田 (北部)：</strong>晚上的夜景與交通樞紐。</li>
+                    </ul>
+                    <div id="osm-map" class="map-container"></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 回到頂部按鈕 -->
+    <a href="#" class="back-to-top">↑</a>
+
+    <script>
+        // 頁籤切換功能
+        function openTab(evt, tabName) {
+            let i, tabcontent, tablinks;
+            const parentEl = evt.currentTarget.closest('.card, .section');
+            if (!parentEl) return;
+            
+            tabcontent = parentEl.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            
+            tablinks = parentEl.getElementsByClassName("tab-button");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            
+            const activeTabContent = parentEl.querySelector("#" + tabName);
+            if(activeTabContent) activeTabContent.style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+
+        // 警告提示框展開/收合功能
+        function toggleWarning() {
+            const details = document.querySelector('.warning-details');
+            if (details.style.display === "block" || details.style.display === "") {
+                details.style.display = "none";
+            } else {
+                details.style.display = "block";
+            }
+        }
+        
+        // 回到頂部按鈕的顯示與隱藏
+        const backToTopButton = document.querySelector(".back-to-top");
+        window.addEventListener("scroll", () => {
+            if (window.pageYOffset > 300) {
+                backToTopButton.classList.add("show");
+            } else {
+                backToTopButton.classList.remove("show");
+            }
+        });
+        
+        // 頁面載入時執行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 自動觸發每個頁籤區塊的第一個按鈕
+            document.querySelectorAll('.tabs').forEach(tabContainer => {
+                const firstTabButton = tabContainer.querySelector('.tab-button');
+                if (firstTabButton) {
+                    firstTabButton.click();
+                }
+            });
+
+            // 初始化 OpenStreetMap
+            const locations = {
+                osakaCastle: { lat: 34.6873, lng: 135.5262, name: "大阪城 (Osaka Castle)" },
+                shinsaibashi: { lat: 34.6756, lng: 135.5013, name: "心齋橋 (Shinsaibashi)" },
+                umeda: { lat: 34.7055, lng: 135.4900, name: "梅田 (Umeda Sky Bldg.)" }
+            };
+
+            const map = L.map('osm-map').setView([34.685, 135.51], 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(map);
+
+            for (const key in locations) {
+                const loc = locations[key];
+                L.marker([loc.lat, loc.lng]).addTo(map)
+                    .bindPopup(`<b>${loc.name}</b>`)
+                    .openPopup();
+            }
+        });
+
+        // 監聽滾動，更新導覽列的 active 狀態
+        const sections = document.querySelectorAll('.section');
+        const navLinks = document.querySelectorAll('nav a');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(a => {
+                a.classList.remove('active');
+                const href = a.getAttribute('href');
+                if (href && href.includes(current)) {
+                    a.classList.add('active');
+                }
+            });
+        });
+
+    </script>
+
+</body>
+</html>

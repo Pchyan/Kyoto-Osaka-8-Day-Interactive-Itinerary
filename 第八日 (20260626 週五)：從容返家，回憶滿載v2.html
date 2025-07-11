@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>最終日・完全攻略 | 10:00 關西機場航班 返家指南</title>
+    <!-- Leaflet CSS for OpenStreetMap -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <style>
+        /* --- 全域設定與字體 --- */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+        @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+
+        :root {
+            --primary-color: #005aab; /* 南海電鐵 Rapi:t 的藍色 */
+            --secondary-color: #f39c12; /* 溫暖的橘色，用於點綴 */
+            --success-color: #28a745; /* 成功、完成的綠色 */
+            --dark-color: #212529;
+            --light-color: #f8f9fa;
+            --white-color: #fff;
+            --border-radius: 12px;
+            --box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            line-height: 1.8;
+            color: var(--dark-color);
+            background-color: #fdfdfd;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* --- 容器與通用樣式 --- */
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 2.5rem 1.5rem;
+            overflow: hidden;
+        }
+
+        h1, h2, h3 {
+            font-weight: 700;
+            line-height: 1.4;
+        }
+
+        h1 { font-size: 2.8rem; }
+        h2 { 
+            font-size: 2.2rem; 
+            margin-bottom: 2rem; 
+            color: var(--primary-color);
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid var(--secondary-color);
+            display: inline-block;
+        }
+        p.subtitle { color: #555; margin-top: -1.5rem; margin-bottom: 2.5rem; }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            background-color: var(--secondary-color);
+            color: var(--white-color);
+            border: none;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(243, 156, 18, 0.3);
+        }
+
+        .btn:hover {
+            background-color: #e68a00;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(243, 156, 18, 0.4);
+        }
+
+        /* --- 動畫 --- */
+        .reveal {
+            position: relative;
+            transform: translateY(50px);
+            opacity: 0;
+            transition: 1s all ease;
+        }
+        .reveal.active {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        /* --- Hero Section --- */
+        .hero {
+            height: 100vh;
+            background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(https://images.unsplash.com/photo-1533107842245-6a5e4a7a82c6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1740&q=80);
+            background-size: cover;
+            background-position: center;
+            color: var(--white-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 20px;
+            position: relative;
+        }
+
+        .hero h1 {
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+        }
+
+        .hero h3 {
+            font-weight: 400;
+            font-size: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .scroll-down {
+            position: absolute;
+            bottom: 30px;
+            font-size: 2.5rem;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            60% { transform: translateY(-10px); }
+        }
+
+        /* --- 卡片與清單樣式 --- */
+        .card {
+            background: var(--white-color);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-bottom: 2.5rem;
+        }
+
+        .checklist ul {
+            list-style: none;
+        }
+
+        .checklist li {
+            font-size: 1.1rem;
+            padding: 14px 5px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: color 0.3s, opacity 0.3s;
+            border-bottom: 1px solid #eee;
+        }
+        .checklist li:last-child { border-bottom: none; }
+        .checklist li.checked {
+            opacity: 0.6;
+            color: #555;
+        }
+        .checklist li.checked .task-text { text-decoration: line-through; }
+        .checklist .icon {
+            font-size: 1.6rem;
+            width: 40px;
+            text-align: center;
+            margin-right: 15px;
+            color: var(--secondary-color);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .checklist li.checked .icon {
+            transform: scale(1.1);
+            color: var(--success-color);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background-color: var(--light-color);
+            border-radius: 6px;
+            margin-top: 1.5rem;
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+            border-radius: 5px;
+            transition: width 0.5s ease-in-out;
+        }
+
+        /* --- 時間軸 --- */
+        .timeline {
+            position: relative;
+            padding: 2rem 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background-color: #e0e0e0;
+            transform: translateX(-50%);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 3rem;
+            width: 50%;
+        }
+
+        .timeline-item:nth-child(odd) {
+            left: 0;
+            padding-right: 30px;
+            text-align: right;
+        }
+
+        .timeline-item:nth-child(even) {
+            left: 50%;
+            padding-left: 30px;
+        }
+        
+        .timeline-item-content {
+            background: var(--white-color);
+            padding: 1.5rem 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            position: relative;
+        }
+
+        .timeline-icon {
+            position: absolute;
+            top: 20px;
+            right: -20px;
+            width: 40px;
+            height: 40px;
+            background: var(--secondary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            z-index: 10;
+            border: 3px solid var(--white-color);
+        }
+
+        .timeline-item:nth-child(even) .timeline-icon {
+            left: -20px;
+        }
+
+        .timeline-time {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+        }
+
+        .timeline-title {
+            font-weight: 700;
+            margin: 0.5rem 0;
+            font-size: 1.25rem;
+        }
+        
+        .timeline-text { font-size: 1rem; color: #444; }
+        
+        .collapsible {
+            background-color: #fff8e1;
+            color: #444;
+            cursor: pointer;
+            padding: 12px;
+            width: 100%;
+            border: 1px solid #ffecb3;
+            text-align: left;
+            outline: none;
+            font-size: 1rem;
+            margin-top: 1rem;
+            border-radius: 8px;
+            font-family: inherit;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        .collapsible:hover { background-color: #ffefd5; }
+        .collapsible::before {
+            content: '🚨 ';
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .collapsible.active::before { content: '✅ '; }
+        .collapsible-content {
+            padding: 0 18px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out;
+            background-color: #fffaf0;
+            border-radius: 0 0 8px 8px;
+            border: 1px solid #ffecb3;
+            border-top: none;
+        }
+        
+        /* --- 網格與地圖 --- */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+        }
+        .grid-item .card { margin-bottom: 0; height: 100%; }
+        .grid-item h3 { font-size: 1.5rem; margin-bottom: 1rem; }
+        .grid-item ul { list-style: none; padding-left: 0; }
+        .grid-item li { margin-bottom: 0.75rem; display: flex; align-items: center;}
+        .grid-item li i { margin-right: 10px; color: var(--primary-color); }
+        
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            z-index: 1; /* 確保地圖在最上層 */
+        }
+
+        /* --- 結尾 --- */
+        .footer {
+            text-align: center;
+            padding: 4rem 1.5rem;
+            background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(https://images.unsplash.com/photo-1544634140-54a848c7c25c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1740&q=80);
+            background-size: cover;
+            background-position: center;
+            color: var(--white-color);
+        }
+        .footer h2 { color: var(--white-color); font-size: 2.5rem; }
+        
+        /* --- 彈出式視窗 (Modal) --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.7);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 30px;
+            border: none;
+            width: 90%;
+            max-width: 600px;
+            border-radius: var(--border-radius);
+            position: relative;
+            animation: slideIn 0.5s;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        @keyframes slideIn {
+            from {transform: translateY(-50px); opacity: 0;}
+            to {transform: translateY(0); opacity: 1;}
+        }
+        .close-btn {
+            color: #aaa;
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        .close-btn:hover, .close-btn:focus { color: black; }
+        .modal-content img { max-width: 100%; border-radius: 8px; margin-top: 1rem; }
+
+        /* --- 響應式設計 --- */
+        @media (max-width: 768px) {
+            h1 { font-size: 2.2rem; }
+            h2 { font-size: 1.8rem; }
+            .hero h3 { font-size: 1.2rem; }
+            
+            .timeline::before { left: 20px; }
+            .timeline-item { width: 100%; padding-left: 60px; padding-right: 0; text-align: left !important; margin-bottom: 2rem; }
+            .timeline-item:nth-child(even) { left: 0; }
+            .timeline-icon { left: 0px !important; }
+
+            .grid-container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <h1>第八日：從容返家，回憶滿載</h1>
+        <h3>10:00 AM | 關西國際機場 (KIX) 航班</h3>
+        <a href="#prep" class="scroll-down" aria-label="Scroll down">↓</a>
+    </header>
+
+    <main>
+        <!-- Key Preparation Section -->
+        <section id="prep" class="container reveal">
+            <div class="card">
+                <h2>決戰前夜：萬全準備清單</h2>
+                <p class="subtitle">完美的一天，從前一晚開始。完成清單，確保明日從容不迫。</p>
+                <div class="checklist">
+                    <ul>
+                        <li><i class="icon fa-solid fa-suitcase-rolling"></i><span class="task-text">行李打包 (95%): 只留明日盥洗用品與衣物。</span></li>
+                        <li><i class="icon fa-solid fa-passport"></i><span class="task-text">文件整合: 全家護照、電子機票放入隨身包。</span></li>
+                        <li><i class="icon fa-solid fa-mobile-screen-button"></i><span class="task-text">線上預辦登機: 取得電子登機證，截圖保存。</span></li>
+                        <li><i class="icon fa-solid fa-ticket"></i><span class="task-text">預訂車票 & 劃位: <strong>務必預訂</strong>南海特急 Rapi:t。</span></li>
+                        <li><i class="icon fa-solid fa-bolt"></i><span class="task-text">電子產品充電: 行動電源、手機、相機充飽電。</span></li>
+                        <li><i class="icon fa-solid fa-bell"></i><span class="task-text">設定多個鬧鐘: 設定 06:10 及 06:15 兩個鬧鐘。</span></li>
+                    </ul>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-bar-fill"></div>
+                </div>
+                <br>
+                <a href="https://www.howto-osaka.com/tc/rapit/" target="_blank" class="btn"><i class="fa-solid fa-train-subway"></i> 立即預訂 Rapi:t 車票</a>
+            </div>
+        </section>
+
+        <!-- Timeline Section -->
+        <section class="container reveal">
+            <h2>返家日・分秒必爭行動表</h2>
+            <div class="timeline">
+                <div class="timeline-item reveal">
+                    <div class="timeline-icon"><i class="fa-solid fa-person-running"></i></div>
+                    <div class="timeline-item-content">
+                        <div class="timeline-time">06:15 - 07:15</div>
+                        <h3 class="timeline-title">晨間作戰 & 飯店退房</h3>
+                        <p class="timeline-text"><strong>Pro-Tip:</strong> 早餐在房內用麵包或飯糰解決。利用電視確認帳單，並使用「快速退房 (Express Check-out)」箱，省去排隊時間。</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item reveal">
+                    <div class="timeline-icon"><i class="fa-solid fa-train"></i></div>
+                    <div class="timeline-item-content">
+                        <div class="timeline-time">07:15 - 08:10</div>
+                        <h3 class="timeline-title">搭乘南海特急 Rapi:t</h3>
+                        <p class="timeline-text">
+                            <strong>🎯 目標班次:</strong> 07:30 南海難波 → 08:08 關西機場T1<br>
+                            <strong>📍 乘車地點:</strong> 南海難波站 2F 中央改札口，通常在第 9 月台。
+                        </p>
+                        <button type="button" class="collapsible">如果錯過這班車？</button>
+                        <div class="collapsible-content">
+                            <p style="padding: 1rem 0;"><strong>方案A (首選):</strong> 搭乘 08:00 的下一班 Rapi:t (08:38抵達)，時間會非常緊張，需用跑的。<br><strong>方案B (備用):</strong> 立即改搭同月台的「空港急行」，車程約48分鐘，無劃位，自由座。</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="timeline-item reveal">
+                    <div class="timeline-icon"><i class="fa-solid fa-plane-departure"></i></div>
+                    <div class="timeline-item-content">
+                        <div class="timeline-time">08:10 - 09:30</div>
+                        <h3 class="timeline-title">決戰關西機場：高效通關</h3>
+                        <p class="timeline-text">
+                            <strong>1. 直上4樓國際出發層</strong>，找到航空公司櫃檯辦理自助行李託運。<br>
+                            <strong>2. 火速通關</strong>，準備好護照與登機證，通過安檢與自動化證照查驗。<br>
+                            <strong>3. 智慧購物</strong>，利用APP或線上預訂，在指定櫃檯快速取貨。
+                        </p>
+                        <button id="mapBtn" class="collapsible" style="margin-top: 1rem; background-color: #e3f2fd; border-color: #bbdefb;"><i class="fa-solid fa-map-location-dot"></i> 點擊查看 KIX 機場T1動線攻略圖</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Shopping & Boarding Section -->
+        <section class="container reveal">
+            <h2>機場最終任務</h2>
+            <p class="subtitle">為旅程畫上完美句點的最後機會！</p>
+            <div class="grid-container">
+                <div class="grid-item reveal">
+                    <div class="card">
+                        <h3><i class="fa-solid fa-gifts"></i> 聰明購物清單</h3>
+                        <ul>
+                            <li><i class="fa-solid fa-cookie-bite"></i> Royce' 生巧克力</li>
+                            <li><i class="fa-solid fa-cookie"></i> 白色戀人</li>
+                            <li><i class="fa-solid fa-candy-cane"></i> 呼吸巧克力 (大阪限定)</li>
+                            <li><i class="fa-solid fa-bars-staggered"></i> Bâton d'or (高級Pocky)</li>
+                            <li><i class="fa-solid fa-leaf"></i> 宇治抹茶系列產品</li>
+                        </ul>
+                        <hr style="margin: 1rem 0; border: 0; border-top: 1px solid #eee;">
+                        <p><strong>✨ 超級省時秘訣</strong></p>
+                        <a href="https://www.kixdutyfree.jp/tw/" target="_blank" class="btn"><i class="fa-solid fa-cart-shopping"></i> KIX 免稅品線上預訂</a>
+                    </div>
+                </div>
+                <div class="grid-item reveal">
+                    <div class="card">
+                        <h3><i class="fa-solid fa-person-walking-arrow-right"></i> 前往登機門</h3>
+                        <p><strong>務必在 09:30 前抵達登機門！</strong></p>
+                        <p>通過安檢後，部分登機門需搭乘航廈內電車，請注意指標並預留充足時間。</p>
+                        <p>在登機門前，再次確認您的護照與登機證是否備妥。</p>
+                        <img src="https://images.unsplash.com/photo-1578509345942-8a43a62d7579?ixlib=rb-4.0.3&auto=format&fit=crop&w=1740&q=80" alt="登機門" style="width: 100%; margin-top: 1rem; border-radius: 8px;">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- OpenStreetMap Section -->
+        <section class="container reveal">
+            <h2>相對位置圖</h2>
+            <p class="subtitle">從「南海難波站」到「關西機場」的地理位置，讓您更有方向感。</p>
+            <div id="map"></div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer reveal">
+        <h2>10:00 AM | Bon Voyage!</h2>
+        <p>旅途辛苦了！帶著滿滿的戰利品與美好的回憶，返回溫暖的家。<br>期待我們的下一次旅程！</p>
+    </footer>
+
+    <!-- Modal -->
+    <div id="mapModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3>關西機場 T1 簡易動線圖</h3>
+            <p>這是一張示意圖，幫助您快速理解從車站到登機的流程。</p>
+            <img src="https://i.imgur.com/uN5aLp2.png" alt="關西機場動線圖">
+            <p style="font-size:0.8rem; color: #777; margin-top:10px;">圖片來源: 自行繪製示意圖</p>
+        </div>
+    </div>
+
+    <!-- Leaflet JS for OpenStreetMap -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        // --- 元素淡入動畫 ---
+        function revealElements() {
+            const reveals = document.querySelectorAll('.reveal');
+            for (let i = 0; i < reveals.length; i++) {
+                const windowHeight = window.innerHeight;
+                const elementTop = reveals[i].getBoundingClientRect().top;
+                const elementVisible = 100;
+
+                if (elementTop < windowHeight - elementVisible) {
+                    reveals[i].classList.add('active');
+                }
+            }
+        }
+        window.addEventListener('scroll', revealElements);
+        revealElements();
+
+        // --- 互動式清單 ---
+        const checklistItems = document.querySelectorAll('.checklist li');
+        const progressBarFill = document.querySelector('.progress-bar-fill');
+        const totalTasks = checklistItems.length;
+
+        function updateProgress() {
+            const checkedTasks = document.querySelectorAll('.checklist li.checked').length;
+            const progress = (checkedTasks / totalTasks) * 100;
+            progressBarFill.style.width = progress + '%';
+        }
+
+        checklistItems.forEach(item => {
+            item.addEventListener('click', () => {
+                item.classList.toggle('checked');
+                const icon = item.querySelector('.icon');
+                if (item.classList.contains('checked')) {
+                    icon.classList.remove('fa-regular', 'fa-square');
+                    icon.classList.add('fa-solid', 'fa-square-check');
+                } else {
+                    icon.classList.remove('fa-solid', 'fa-square-check');
+                    icon.classList.add('fa-regular', 'fa-square');
+                }
+                updateProgress();
+            });
+             // Initialize icons
+            const icon = item.querySelector('.icon');
+            if (!item.classList.contains('checked')) {
+                icon.classList.add('fa-regular', 'fa-square');
+            } else {
+                 icon.classList.add('fa-solid', 'fa-square-check');
+            }
+        });
+        updateProgress();
+
+        // --- 可展開內容 ---
+        const collapsibles = document.querySelectorAll('.collapsible');
+        collapsibles.forEach(coll => {
+            coll.addEventListener('click', function() {
+                this.classList.toggle('active');
+                const content = this.nextElementSibling;
+                if (content.style.maxHeight) {
+                    content.style.maxHeight = null;
+                } else {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                }
+            });
+        });
+
+        // --- 彈出式視窗 (Modal) ---
+        const modal = document.getElementById('mapModal');
+        const mapBtn = document.getElementById('mapBtn');
+        const closeBtn = document.querySelector('.modal .close-btn');
+
+        mapBtn.onclick = function() {
+            modal.style.display = "flex";
+        }
+        closeBtn.onclick = function() {
+            modal.style.display = "none";
+        }
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        // --- OpenStreetMap 初始化 ---
+        const nambaStation = [34.6625, 135.5015];
+        const kixAirport = [34.4320, 135.2440];
+
+        const map = L.map('map').setView([34.547, 135.37], 11); // 中心點設在兩者之間
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        const trainIcon = L.icon({
+            iconUrl: 'https://cdn-icons-png.flaticon.com/512/1042/1042335.png', // Simple train icon
+            iconSize: [40, 40],
+            iconAnchor: [20, 40],
+            popupAnchor: [0, -40]
+        });
+
+        const planeIcon = L.icon({
+            iconUrl: 'https://cdn-icons-png.flaticon.com/512/565/565431.png', // Simple plane icon
+            iconSize: [40, 40],
+            iconAnchor: [20, 40],
+            popupAnchor: [0, -40]
+        });
+
+        L.marker(nambaStation, {icon: trainIcon}).addTo(map)
+            .bindPopup('<b>南海難波站</b><br>Rapi:t 起點站')
+            .openPopup();
+
+        L.marker(kixAirport, {icon: planeIcon}).addTo(map)
+            .bindPopup('<b>關西國際機場 (KIX)</b><br>決戰之地！');
+            
+        // 繪製路線
+        const latlngs = [nambaStation, kixAirport];
+        L.polyline(latlngs, {color: 'var(--primary-color)', weight: 5, opacity: 0.7}).addTo(map);
+
+    });
+    </script>
+</body>
+</html>
